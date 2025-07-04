@@ -3,3 +3,8 @@
 *.dat
 *.gen
 *.tmp
+*.hsd
+*.out
+*.tag
+*.pyc
+*.bin
