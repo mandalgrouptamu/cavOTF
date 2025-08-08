@@ -7,6 +7,11 @@ def dpk(x, µ, par):
     #return -ωc**2 * x  - ηb * µ
     return  - ηb * µ
 
+def dpkT(x, µ, par):
+    ηb = par.ηb
+    ωc = par.ωc
+    return -ωc**2 * x  - ηb * µ
+
 
 
 def dpj(x, fj, dµ, μ, par):
@@ -31,7 +36,7 @@ def vvl(x, p, µ, param, f1): #only for 1 cavity
     
     x += (v * dt + A) 
     #-------------------------
-    f2 = dpk(x * 1.0, µ, param)
+    f2 = dpkT(x * 1.0, µ, param)
     #---- V update ----------- 
     v += ( 0.5 * dt * (f1+f2)/param.m - dt * λ * v +  σ * (dt**0.5) * ξ - A * λ ) 
     #-------------------------
@@ -65,8 +70,8 @@ class param:
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
 
-        totaltime    = 400   # total simulation time in fs
-        thermal_time = 100000   # thermalization time in fs
+        totaltime    = 1000   # total simulation time in fs
+        thermal_time = 10000   # thermalization time in fs
         dt           = 0.5    #time step in fs
 
         self.steps = int(totaltime // dt)
