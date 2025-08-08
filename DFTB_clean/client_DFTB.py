@@ -55,8 +55,8 @@ os.environ['DFTB_PREFIX'] = '/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/'
 
 atm = 'O33H66' # Define the atomic structure
 # Load the atomic coordinates from the 'finalstep_InTheBox.xyz' file
-coordina_initial = np.loadtxt('init/initXYZ.dat', usecols=(2,3,4))
-velocity_initial = np.loadtxt('init/initPxPyPz.dat', usecols=(0,1,2))
+coordina_initial = np.loadtxt('initXYZ.dat', usecols=(2,3,4))
+velocity_initial = np.loadtxt('initPxPyPz.dat', usecols=(0,1,2))
 coordinates = np.array(coordina_initial) * bhr #a.u.
 
 # --- velocity
@@ -93,30 +93,41 @@ xk, pk = init(µj, params) # initialize the one-dimensional xk, pk
 x_save = np.zeros((int(thermal_steps * 0.1)))    
 
 #------------------------------------------------------
-# Thermalize the cavity
-fk = dpk(xk, μj, params)
-for ti in range(thermal_steps):
-    xk, pk, fk = vvl(xk, pk, µj, params, fk)
-    if ti > thermal_steps  - len(x_save):
-        x_save[ti - thermal_steps  + len(x_save)] = xk
+# # Thermalize the cavity
+# fk = dpkT(xk, μj, params)
+# for ti in range(thermal_steps):
+#     xk, pk, fk = vvl(xk, pk, µj, params, fk)
+#     if ti > thermal_steps  - len(x_save):
+#         x_save[ti - thermal_steps  + len(x_save)] = xk
         
 data = np.histogram(x_save, bins=100)
 np.savetxt('hist_coupled.txt', np.c_[data[1][1:], data[0]])
 print('Thermalization done')
-xk ,pk = -19.13384715389926, 0.0180175741057247781  #BUG: set the cavity position and momentum to a specific value after thermalization
-xk, pk = np.array([xk]), np.array([pk])  # Convert to numpy arrays for consistency
-print('BUG. Cavity position and momentum set to:', xk, pk)
+# xk ,pk = -19.13384715389926, 0.0180175741057247781  #BUG: set the cavity position and momentum to a specific value after thermalization
+# xk, pk = np.array([xk]), np.array([pk])  # Convert to numpy arrays for consistency
+# print('BUG. Cavity position and momentum set to:', xk, pk)
 #------------------------------------------------------
+xk, pk = np.loadtxt('initial.dat').T
+xk = np.array([xk])  # Ensure xk is a 1D array
+pk = np.array([pk])  # Ensure pk is a 1D array
+
+#-----for Leapfrog -----------------
+pk += dpk(xk, μj, params) * dt2
+pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
 f = open('qt.out', 'w') # Open the file in write mode
 x0 = - (2/params.ωc) * μj * params.ηb 
-dµ = getdµ(natoms, rj, μj, atm, box, False)
+dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
 
-output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f}'
+output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f}'
 fjt = dpj(xk, fj[:natoms], dµ, μj, params)
 fxt = dpk(xk, μj, params)
 #print(output_format.format(0,xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
-print(0,xk, np.sum(μj), fxt, fjt, file=f)
+Tk =np.sum(pj**2 / (2 * masses))
+# Print the initial state to the output file
+
+print(output_format.format(0,xk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
+
 # Main MD loop
 tstep0 = time.time()
 
@@ -130,13 +141,14 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     # Update the momenta vv1
     pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2
     pj[natoms:3*natoms] += fj[natoms:3*natoms] * dt2
+    # pj[:] += fj[:] * dt2
 
     # Update the positions vv2
     rj += pj * dt / masses
 
     # Update the cavity momenta  vv3
     pk += dpk(xk, μj, params) * dt2
-    xk += pk * dt
+    # xk += pk * dt
 
     # get forces and charges
     fj, charges = getForcesCharges(rj, natoms, atm, box)  
@@ -144,7 +156,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     μj = np.sum(charges * (rj[:natoms] - Rcom))
 
     if i % 5 == 0:
-        dµ = getdµ(natoms, rj, μj, atm, box, False)
+        dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
 
     # Update the momenta vv4
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)
@@ -152,6 +164,9 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     
     pj[:natoms] += fjt * dt2
     pj[natoms:3*natoms] += fj[natoms:3*natoms] * dt2
+    # pj[:] += fj[:] * dt2
+
+
     pk += fxt * dt2
 
     if i % 1 == 0:
@@ -159,7 +174,8 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
         f = open('qt.out' , 'a') # Open the file in write mode
 
     #print(output_format.format((i+1), xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
-    print((i+1),xk, np.sum(μj), fxt, fjt, file=f)
+    Tk = np.sum(pj**2 / (2 * masses))
+    print(output_format.format((i+1),xk[0], np.sum(μj), fxt, fjt[0] , Tk), file=f)
 
     #---------- some stuff -----------------
     coordinates = np.column_stack((rj[:natoms], rj[natoms:2*natoms], rj[2*natoms:3*natoms]))
@@ -176,13 +192,14 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
         atoms.set_positions(coordinates/bhr)
         atoms.set_positions(atoms.get_positions(wrap=False))
         write('WaterMD_Cavity.xyz', atoms, format='xyz', append=True)
+        print("Step xyz ", i+1 )
     #---------- some stuff -----------------
     return rj, pj, xk, pk, fj, μj, dµ, f
 
 
-def client(q, params):
-    rj, pj, xk, pk, fj, μj, dµ, f = calculation(rj, pj, xk, pk, fj, μj, dµ, f, params)
-    return q
+# def client(q, params):
+#     rj, pj, xk, pk, fj, μj, dµ, f = calculation(rj, pj, xk, pk, fj, μj, dµ, f, params)
+#     return q
 
 # --- main loop ---
 q = xk[0]
@@ -218,6 +235,7 @@ for i in range(steps):
 
     # 4) compute next q and send it for step i+1
     # q = client(q, param)
+    
     rj, pj, xk, pk, fj, μj, dµ, f = calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i)
     dat['step'] = i + 1
     dat['q'] = xk[0]  # update q
