@@ -119,17 +119,39 @@ f = open('qt.out', 'w') # Open the file in write mode
 x0 = - (2/params.ωc) * μj * params.ηb 
 dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
 
-output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f}'
+output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}'
 fjt = dpj(xk, fj[:natoms], dµ, μj, params)
 fxt = dpk(xk, μj, params)
 #print(output_format.format(0,xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
 Tk =np.sum(pj**2 / (2 * masses))
 # Print the initial state to the output file
-
-print(output_format.format(0,xk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
-
+print(output_format.format(0,xk[0],pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
 # Main MD loop
 tstep0 = time.time()
+
+#------------------------------------------------------
+#------------------------------------------------------
+def andersen_thermostat(Px, Py, Pz, mass, β, timestep, collision_freq):
+    N = len(Px)
+    mass = np.asarray(mass)
+    Px_new, Py_new, Pz_new = Px.copy(), Py.copy(), Pz.copy()
+    collision_prob = 1 - np.exp(-collision_freq * timestep)
+
+    #reassign = np.random.rand(N) < collision_prob
+
+    reassign = np.zeros(N, dtype=bool)
+    selected = np.random.choice(N, size=16, replace=False)
+    reassign[selected] = True
+
+
+    std_dev = np.sqrt(mass[reassign] / β )
+
+    Px_new[reassign] = np.random.normal(0, std_dev)
+    Py_new[reassign] = np.random.normal(0, std_dev)
+    Pz_new[reassign] = np.random.normal(0, std_dev)
+
+    return Px_new, Py_new, Pz_new
+
 
 #------------------------------------------------------
 #------------------------------------------------------
@@ -169,13 +191,19 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
 
     pk += fxt * dt2
 
+    if i < 200:
+        # Apply Andersen thermostat
+        collision_freq = 0.001
+        pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms] = andersen_thermostat(
+            pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms], mass, params.β, dt, collision_freq)
+
     if i % 1 == 0:
         f.close()
         f = open('qt.out' , 'a') # Open the file in write mode
 
     #print(output_format.format((i+1), xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
     Tk = np.sum(pj**2 / (2 * masses))
-    print(output_format.format((i+1),xk[0], np.sum(μj), fxt, fjt[0] , Tk), file=f)
+    print(output_format.format((i+1),xk[0], pk[0], np.sum(μj), fxt, fjt[0] , Tk), file=f)
 
     #---------- some stuff -----------------
     coordinates = np.column_stack((rj[:natoms], rj[natoms:2*natoms], rj[2*natoms:3*natoms]))
