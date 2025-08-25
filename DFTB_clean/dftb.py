@@ -17,12 +17,26 @@ def caldftb(atm, coordinates, box, force=True, charge=True):
 
     calc = Dftb(label = atm,
             Hamiltonian_SCC='Yes',
-            Hamiltonian_SCCTolerance=1e-005,
-            Hamiltonian_MaxSCCIterations=500,
+            Hamiltonian_SCCTolerance=1e-003,
+            Hamiltonian_MaxSCCIterations=400,
+            Hamiltonian_Mixer='''Anderson {
+            MixingParameter = 0.026}''',
+            Hamiltonian_ConvergentSccOnly='No',
             Hamiltonian_MaxAngularMomentum_='',
-            Hamiltonian_MaxAngularMomentum_C='p',
             Hamiltonian_MaxAngularMomentum_O='p',
             Hamiltonian_MaxAngularMomentum_H='s',
+            Hamiltonian_Charge=0.0,
+            Hamiltonian_SpinConstants='''{O = {
+            # Wss   Wsp    Wps    Wpp
+            -0.035 -0.030 -0.030 -0.028
+            }
+            H = {
+            # Wss
+            -0.072
+            }}''',
+            Options_WriteDetailedXml='No',
+            Options_WriteEigenvectors='No',
+            Options_WriteResultsTag='Yes',
             kpts=(3,3,3))
 
     atoms.calc = calc
