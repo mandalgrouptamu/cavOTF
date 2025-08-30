@@ -79,15 +79,13 @@ class param:
         self.thermal_steps = int(thermal_time // dt)
 
         self.dL = 20
-        self.nk = 1
+        self.nk = 25
 
         self.ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (self.dL * self.nk)
         self.ωk = np.sqrt(self.ωc**2 + (self.c * self.ky)**2)
-
-
  
         self.m = 1.0
           
-        self.ηb = 0.0004  #0.007 
+        self.ηb = 0.0003  #0.007 
 
 
