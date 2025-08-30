@@ -31,8 +31,6 @@ def vvlKC(q, p, param): #only for 1 cavity
 
     qk, pk = jtok(q[:], p[:], ω0, ωk)
 
-    print("initial qk, pk:", qk, pk)
-
     # f1 = -ωk * qk
 
     # A = (0.5 * dt2**2) * (f1 - λ * p) + (σ * dt2**(3.0/2.0)) * (0.5 * ξ + c * θ) 
@@ -44,17 +42,12 @@ def vvlKC(q, p, param): #only for 1 cavity
     # pk += ( 0.5 * dt2 * (f1+f2) - dt2 * λ * pk +  σ * (dt**0.5) * ξ - A * λ ) 
     # #-------------------------
 
-    print("langavin updated qk, pk:", qk, pk)
-
     
     qk1 = qk * np.cos(ωk * dt2) + pk * np.sin(ωk * dt2)/ωk
     pk1 = pk * np.cos(ωk * dt2) - ωk * qk * np.sin(ωk * dt2)
     qk, pk = qk1 * 1.0, pk1 * 1.0
 
-    print("updated qk, pk:", qk, pk)
-
     q[:], p[:] = ktoj(qk, pk, ω0, ωk)
-
 
     return q, p
 
@@ -163,6 +156,10 @@ if __name__ == "__main__":
     with open("server_hostname.txt", "a") as f:
             f.write(f"{port}\n")
             
+    
+
+
+
     
     srv = socketserver.ThreadingTCPServer(("", port), Handler)
     srv.N      = int(sys.argv[1]) 
