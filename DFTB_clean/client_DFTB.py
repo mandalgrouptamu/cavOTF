@@ -48,10 +48,11 @@ dt = params.dt
 dt2 = dt/2
 thermal_steps = params.thermal_steps
 
-os.system('which dftb+')
+os.system('export DFTB_PREFIX=/home/sachith/vsc-fluxside/dftb_sk_files/mio-1-1/')
+os.environ['DFTB_PREFIX'] = '/home/sachith/vsc-fluxside/dftb_sk_files/mio-1-1/'
+os.system('export A="/home/sachith/vsc-fluxside/dftb_package/dftbplus-24.1.x86_64-linux/bin/dftb+ "')
 
-os.system('export DFTB_PREFIX=/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/')
-os.environ['DFTB_PREFIX'] = '/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/'
+os.environ["DFTB_COMMAND"] = "/home/sachith/vsc-fluxside/dftb_package/dftbplus-24.1.x86_64-linux/bin/dftb+"
 
 atm = 'O33H66' # Define the atomic structure
 # Load the atomic coordinates from the 'finalstep_InTheBox.xyz' file
@@ -118,6 +119,7 @@ pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 f = open('qt.out', 'w') # Open the file in write mode
 x0 = - (2/params.ωc) * μj * params.ηb 
 dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+
 
 output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}'
 fjt = dpj(xk, fj[:natoms], dµ, μj, params)
@@ -191,15 +193,20 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
 
     pk += fxt * dt2
 
-    if i < 200:
+    if i < 250:
         # Apply Andersen thermostat
         collision_freq = 0.001
         pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms] = andersen_thermostat(
             pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms], mass, params.β, dt, collision_freq)
 
-    if i % 1 == 0:
+    if i % 2 == 0:
         f.close()
         f = open('qt.out' , 'a') # Open the file in write mode
+
+    if i % 2 == 0:
+        f2 = open('midpoint.dat' , 'w') # Open the file in write mode
+        print(i+1,xk,pk,rj,pj, file=f2)
+        f2.close()
 
     #print(output_format.format((i+1), xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
     Tk = np.sum(pj**2 / (2 * masses))
