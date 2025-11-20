@@ -118,7 +118,7 @@ pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
 f = open('qt.out', 'w') # Open the file in write mode
 x0 = - (2/params.ωc) * μj * params.ηb 
-dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+dµ = getdµ(natoms, rj, atm, box, dr=0.0001)
 
 
 output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}'
