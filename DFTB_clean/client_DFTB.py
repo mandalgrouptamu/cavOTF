@@ -180,7 +180,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     μj = np.sum(charges * (rj[:natoms] - Rcom))
 
     if i % 5 == 0:
-        dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+        dµ = getdµ(natoms, rj, atm, box, dr=0.0001)
 
     # Update the momenta vv4
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)
