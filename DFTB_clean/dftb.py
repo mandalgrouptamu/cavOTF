@@ -71,7 +71,7 @@ def getCharges(rj, natoms, atm, box):
     _, charges = caldftb(atm,coordinates/bhr,box, True, True)
     return charges
 
-def getdµ(natoms, rj, μj, atm, box, dr=0.0001):
+def getdµ(natoms, rj, atm, box, dr=0.0001):
         """Forward finite difference to calculate the dipole derivative
           If dr is False it will return charges instead of dipole derivative.
         """
@@ -84,5 +84,11 @@ def getdµ(natoms, rj, μj, atm, box, dr=0.0001):
                     rj2[j] += dr
                     charges2 = getCharges(rj2, natoms, atm, box)
                     μ2 = np.sum(charges2 * (rj2[:natoms]))
-                    dµ[j] = (μ2-μj)/dr
+
+                    rj3 = rj.copy()
+                    rj3[j] -= dr
+                    charges3 = getCharges(rj3, natoms, atm, box)
+                    μ3 = np.sum(charges3 * (rj3[:natoms]))
+
+                    dµ[j] = (μ2-μ3)/(2*dr)
         return dµ
