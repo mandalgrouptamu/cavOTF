@@ -8,3 +8,13 @@
 *.tag
 *.pyc
 *.bin
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+.env.*
+.DS_Store
+.vscode/
+build/
+dist/
+*.egg-info/
