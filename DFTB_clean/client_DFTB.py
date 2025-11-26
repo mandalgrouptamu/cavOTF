@@ -1,21 +1,13 @@
 import os
 import numpy as np
-#from ase.build import molecule
-#from ase.calculators.dftb import Dftb
 from ase.io import write
 from ase import Atoms
 import time
 from dftb import getForcesCharges, getCharges, getdµ
 from funcLM import *
 
-
-# client.py
 import socket, sys, time, json
 import numpy as np
-
-
-
-
 
 fob = open("../server_hostname.txt", "r")
 HOST = fob.readline().strip()
