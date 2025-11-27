@@ -1,21 +1,20 @@
+# client_DFTB.py
+# Client code 
+
 import os
+import sys
+import time
+import json
+import socket
+
 import numpy as np
-#from ase.build import molecule
-#from ase.calculators.dftb import Dftb
 from ase.io import write
 from ase import Atoms
-import time
-from dftb import getForcesCharges, getCharges, getdµ
+
+from dftb import getForcesCharges, getdµ
 from funcLM import *
 
-
-# client.py
-import socket, sys, time, json
-import numpy as np
-
-
-
-
+# Read server hostname and port from file
 
 fob = open("../server_hostname.txt", "r")
 HOST = fob.readline().strip()
@@ -32,10 +31,8 @@ def comm(msg):
         reply = cli.recv(4096)
     return reply.decode().strip()
 
+# === Parameters and initializations ===
 
-#------------ INITIALIZATION ----------------
-
-print('Start')
 t0 = time.time()
 bhr = 1.8897259886
 evdivA = 27.2114 * bhr
@@ -48,12 +45,14 @@ dt = params.dt
 dt2 = dt/2
 thermal_steps = params.thermal_steps
 
-os.system('which dftb+')
+# Path to DFTB+ SK files
+# e.g., mio-1-1
 
-os.system('export DFTB_PREFIX=/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/')
-os.environ['DFTB_PREFIX'] = '/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/'
+os.system('export DFTB_PREFIX=path_to_your_DFTB_SK_files') 
+os.environ['DFTB_PREFIX'] = 'path_to_your_DFTB_SK_files'  
 
-atm = 'O33H66' # Define the atomic structure
+atm = 'atomic_structure' # Define the atomic structure, e.g., 'O33H66' for 33 water molecules
+
 # Load the atomic coordinates from the 'finalstep_InTheBox.xyz' file
 coordina_initial = np.loadtxt('initXYZ.dat', usecols=(2,3,4))
 velocity_initial = np.loadtxt('initPxPyPz.dat', usecols=(0,1,2))
@@ -69,14 +68,12 @@ mass = atoms.get_masses()  * 1822.8884
 box = params.box
 atoms.set_cell([box, box, box])
 atoms.set_pbc(True)
-#scaled_positions = atoms.get_positions(wrap=True)
 px, py, pz = vx * mass, vy * mass, vz * mass
 
 coordinates = atoms.get_positions(wrap=False) * bhr
 atoms.set_positions(coordinates/bhr)
 
-write('WaterMD_Cavity.xyz',atoms,format='xyz', append = True)
-
+write('coordinates.xyz',atoms,format='xyz', append = True)
 
 pj = np.concatenate((px, py, pz))
 masses = np.concatenate((mass, mass, mass))
@@ -87,46 +84,34 @@ Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
 fj, charges = getForcesCharges(rj, natoms, atm, box)
 µj = np.sum(charges * rxj)
 
-
-# initialize the cavity variables
-xk, pk = init(µj, params) # initialize the one-dimensional xk, pk
+xk, pk = init(µj, params)
 x_save = np.zeros((int(thermal_steps * 0.1)))    
 
-#------------------------------------------------------
-# # Thermalize the cavity
-# fk = dpkT(xk, μj, params)
-# for ti in range(thermal_steps):
-#     xk, pk, fk = vvl(xk, pk, µj, params, fk)
-#     if ti > thermal_steps  - len(x_save):
-#         x_save[ti - thermal_steps  + len(x_save)] = xk
         
 data = np.histogram(x_save, bins=100)
 np.savetxt('hist_coupled.txt', np.c_[data[1][1:], data[0]])
 print('Thermalization done')
-# xk ,pk = -19.13384715389926, 0.0180175741057247781  #BUG: set the cavity position and momentum to a specific value after thermalization
-# xk, pk = np.array([xk]), np.array([pk])  # Convert to numpy arrays for consistency
-# print('BUG. Cavity position and momentum set to:', xk, pk)
-#------------------------------------------------------
+
 xk, pk = np.loadtxt('initial.dat').T
-xk = np.array([xk])  # Ensure xk is a 1D array
-pk = np.array([pk])  # Ensure pk is a 1D array
+xk = np.array([xk]) 
+pk = np.array([pk])
 
 #-----for Leapfrog -----------------
 pk += dpk(xk, μj, params) * dt2
 pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
-f = open('qt.out', 'w') # Open the file in write mode
+f = open('qt.out', 'w') 
 x0 = - (2/params.ωc) * μj * params.ηb 
-dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+dµ = getdµ(natoms, rj, atm, box, dr=0.0001)
+
 
 output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}'
 fjt = dpj(xk, fj[:natoms], dµ, μj, params)
 fxt = dpk(xk, μj, params)
-#print(output_format.format(0,xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
 Tk =np.sum(pj**2 / (2 * masses))
-# Print the initial state to the output file
 print(output_format.format(0,xk[0],pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
-# Main MD loop
+
+
 tstep0 = time.time()
 
 #------------------------------------------------------
@@ -159,18 +144,15 @@ def andersen_thermostat(Px, Py, Pz, mass, β, timestep, collision_freq):
 
 
 def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
-    # i = params.i
     # Update the momenta vv1
     pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2
     pj[natoms:3*natoms] += fj[natoms:3*natoms] * dt2
-    # pj[:] += fj[:] * dt2
 
     # Update the positions vv2
     rj += pj * dt / masses
 
     # Update the cavity momenta  vv3
     pk += dpk(xk, μj, params) * dt2
-    # xk += pk * dt
 
     # get forces and charges
     fj, charges = getForcesCharges(rj, natoms, atm, box)  
@@ -178,7 +160,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     μj = np.sum(charges * (rj[:natoms] - Rcom))
 
     if i % 5 == 0:
-        dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+        dµ = getdµ(natoms, rj, atm, box, dr=0.0001)
 
     # Update the momenta vv4
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)
@@ -186,32 +168,28 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     
     pj[:natoms] += fjt * dt2
     pj[natoms:3*natoms] += fj[natoms:3*natoms] * dt2
-    # pj[:] += fj[:] * dt2
 
 
     pk += fxt * dt2
 
-    if i < 200:
+    if i < 250:
         # Apply Andersen thermostat
         collision_freq = 0.001
         pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms] = andersen_thermostat(
             pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms], mass, params.β, dt, collision_freq)
-        
-    if 200 < i < 250:
-        collision_freq = 0.001
-        pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms] = andersen_thermostat(
-            pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms], mass, params.β*0.75, dt, collision_freq)
 
-
-    if i % 1 == 0:
+    if i % 2 == 0:
         f.close()
         f = open('qt.out' , 'a') # Open the file in write mode
 
-    #print(output_format.format((i+1), xk[0], np.sum(μj), fxt[0], fjt[0]), file=f)
+    if i % 2 == 0:
+        f2 = open('midpoint.dat' , 'w') # Open the file in write mode
+        print(i+1,xk,pk,rj,pj, file=f2)
+        f2.close()
+
     Tk = np.sum(pj**2 / (2 * masses))
     print(output_format.format((i+1),xk[0], pk[0], np.sum(μj), fxt, fjt[0] , Tk), file=f)
 
-    #---------- some stuff -----------------
     coordinates = np.column_stack((rj[:natoms], rj[natoms:2*natoms], rj[2*natoms:3*natoms]))
     atoms.set_positions(coordinates/bhr)
     coordinates = atoms.get_positions(wrap=False) * bhr
@@ -227,18 +205,13 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
         atoms.set_positions(atoms.get_positions(wrap=False))
         write('WaterMD_Cavity.xyz', atoms, format='xyz', append=True)
         print("Step xyz ", i+1 )
-    #---------- some stuff -----------------
     return rj, pj, xk, pk, fj, μj, dµ, f
 
 
-# def client(q, params):
-#     rj, pj, xk, pk, fj, μj, dµ, f = calculation(rj, pj, xk, pk, fj, μj, dµ, f, params)
-#     return q
 
 # --- main loop ---
 q = xk[0]
 p = pk[0]
-# steps = 10
 steps = params.steps
 sleeptime = 1.5
 param = {}

@@ -8,8 +8,8 @@ def caldftb(atm, coordinates, box, force=True, charge=True):
     # proform single point DFTB calculation in periodic box and return forces and charges
     atoms = Atoms(atm,  positions =   coordinates) # atomic structure
     cell = np.array([[box, 0.0, 0.0],  # X-direction
-                    [0.0, box, 0.0],  # Y-direction
-                    [0.0, 0.0, box]]) # Z-direction
+                    [0.0, box, 0.0],   # Y-direction
+                    [0.0, 0.0, box]])  # Z-direction
 
     # Set the cell and enable periodic boundary conditions
     atoms.set_cell(cell)  # Set the unit cell
@@ -17,12 +17,26 @@ def caldftb(atm, coordinates, box, force=True, charge=True):
 
     calc = Dftb(label = atm,
             Hamiltonian_SCC='Yes',
-            Hamiltonian_SCCTolerance=1e-005,
-            Hamiltonian_MaxSCCIterations=500,
+            Hamiltonian_SCCTolerance=1e-003,
+            Hamiltonian_MaxSCCIterations=400,
+            Hamiltonian_Mixer='''Anderson {
+            MixingParameter = 0.026}''',
+            Hamiltonian_ConvergentSccOnly='No',
             Hamiltonian_MaxAngularMomentum_='',
-            Hamiltonian_MaxAngularMomentum_C='p',
             Hamiltonian_MaxAngularMomentum_O='p',
             Hamiltonian_MaxAngularMomentum_H='s',
+            Hamiltonian_Charge=0.0,
+            Hamiltonian_SpinConstants='''{O = {
+            # Wss   Wsp    Wps    Wpp
+            -0.035 -0.030 -0.030 -0.028
+            }
+            H = {
+            # Wss
+            -0.072
+            }}''',
+            Options_WriteDetailedXml='No',
+            Options_WriteEigenvectors='No',
+            Options_WriteResultsTag='Yes',
             kpts=(3,3,3))
 
     atoms.calc = calc
@@ -57,7 +71,7 @@ def getCharges(rj, natoms, atm, box):
     _, charges = caldftb(atm,coordinates/bhr,box, True, True)
     return charges
 
-def getdµ(natoms, rj, μj, atm, box, dr=0.0001):
+def getdµ(natoms, rj, atm, box, dr=0.0001):
         """Forward finite difference to calculate the dipole derivative
           If dr is False it will return charges instead of dipole derivative.
         """
@@ -70,5 +84,11 @@ def getdµ(natoms, rj, μj, atm, box, dr=0.0001):
                     rj2[j] += dr
                     charges2 = getCharges(rj2, natoms, atm, box)
                     μ2 = np.sum(charges2 * (rj2[:natoms]))
-                    dµ[j] = (μ2-μj)/dr
+
+                    rj3 = rj.copy()
+                    rj3[j] -= dr
+                    charges3 = getCharges(rj3, natoms, atm, box)
+                    μ3 = np.sum(charges3 * (rj3[:natoms]))
+
+                    dµ[j] = (μ2-μ3)/(2*dr)
         return dµ
