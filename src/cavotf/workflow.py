@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import shlex
 import shutil
 import subprocess
 import time
@@ -18,12 +19,15 @@ class CavOTFWorkflow:
     def __init__(self, config: CavOTFConfig):
         self.config = config
         self.param, self.param_module = load_param(config.clean_template_dir)
+        self._apply_physics_overrides()
 
     def run_all(self) -> None:
         self.stage_clients()
-        self.wait_for_mu_results()
-        self.prepare_initial_conditions()
-        self.launch_server_and_clients()
+        if self.config.hpc.run_get_mu:
+            self.wait_for_mu_results()
+        if self.config.hpc.run_dynamics:
+            self.prepare_initial_conditions()
+            self.launch_server_and_clients()
 
     def stage_clients(self) -> None:
         working = self.config.working_dir
@@ -42,7 +46,8 @@ class CavOTFWorkflow:
         for idx in range(self.param.nk):
             run_dir = working / f"{self.config.run_prefix}{idx}"
             self._prepare_client_dir(run_dir, source_dirs[idx])
-            self._submit_mu_job(run_dir)
+            if self.config.hpc.run_get_mu:
+                self._submit_mu_job(run_dir)
 
     def wait_for_mu_results(self) -> None:
         required = [self._run_dir(i) / self.config.mu_results_filename for i in range(self.param.nk)]
@@ -77,7 +82,11 @@ class CavOTFWorkflow:
 
     def launch_server_and_clients(self) -> None:
         server_script = self._ensure_script_available(self.config.server_sbatch, self.config.working_dir)
-        subprocess.run(["sbatch", server_script.name, str(self.param.nk)], cwd=self.config.working_dir, check=True)
+        subprocess.run(
+            ["sbatch", *self._sbatch_options(), *self._export_environment(), server_script.name, str(self.param.nk)],
+            cwd=self.config.working_dir,
+            check=True,
+        )
         time.sleep(self.config.server_wait_seconds)
 
         for idx in range(self.param.nk):
@@ -88,7 +97,17 @@ class CavOTFWorkflow:
                     path.unlink()
 
             client_script = self._ensure_script_available(self.config.client_sbatch, run_dir)
-            subprocess.run(["sbatch", client_script.name, str(idx)], cwd=run_dir, check=True)
+            subprocess.run(
+                [
+                    "sbatch",
+                    *self._sbatch_options(),
+                    *self._export_environment(),
+                    client_script.name,
+                    str(idx),
+                ],
+                cwd=run_dir,
+                check=True,
+            )
 
     def _prepare_client_dir(self, run_dir: Path, source_dir: Path) -> None:
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -103,7 +122,11 @@ class CavOTFWorkflow:
 
     def _submit_mu_job(self, run_dir: Path) -> None:
         script_path = self._ensure_script_available(self.config.mu_submission_script, run_dir)
-        subprocess.run(["sbatch", Path(script_path).name], cwd=run_dir, check=True)
+        subprocess.run(
+            ["sbatch", *self._sbatch_options(), *self._export_environment(), Path(script_path).name],
+            cwd=run_dir,
+            check=True,
+        )
 
     def _ensure_script_available(self, script: Path | str, destination: Path) -> Path:
         script_path = Path(script)
@@ -140,3 +163,42 @@ class CavOTFWorkflow:
             (self.config.initial_positions_name, self.config.initial_position_target),
             (self.config.initial_velocities_name, self.config.initial_velocity_target),
         )
+
+    def _sbatch_options(self) -> list[str]:
+        opts: list[str] = []
+        hpc = self.config.hpc
+        if hpc.partition:
+            opts.extend(["--partition", hpc.partition])
+        if hpc.account:
+            opts.extend(["--account", hpc.account])
+        if hpc.cpus_per_job > 0:
+            opts.extend(["--cpus-per-task", str(hpc.cpus_per_job)])
+        return opts
+
+    def _export_environment(self) -> list[str]:
+        exports = []
+        env_pairs = []
+        if self.config.hpc.dftb_prefix:
+            env_pairs.append(f"DFTB_PREFIX={shlex.quote(self.config.hpc.dftb_prefix)}")
+        if self.config.hpc.dftb_command:
+            env_pairs.append(f"DFTB_COMMAND={shlex.quote(self.config.hpc.dftb_command)}")
+        if env_pairs:
+            exports.extend(["--export", "ALL," + ",".join(env_pairs)])
+        return exports
+
+    def _apply_physics_overrides(self) -> None:
+        physics = self.config.physics
+        param = self.param
+        if physics.use_param_nk:
+            param.nk = physics.nk
+        else:
+            param.nk = self.config.general.n_trajectories
+
+        param.β = physics.beta
+        param.λ = physics.lambda_
+        param.ωc = physics.omega_c
+        param.ω0 = physics.omega_c
+        param.ηb = physics.eta_b
+
+        param.ky = np.fft.fftfreq(param.nk) * param.nk * 2 * np.pi / (param.dL * param.nk)
+        param.ωk = np.sqrt(param.ωc**2 + (param.c * param.ky) ** 2)
