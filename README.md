@@ -71,7 +71,7 @@ dftb_command = /scratch/user/u.aa271894/.conda/envs/dftbplus/bin/dftb+ > PREFIX.
 Notes:
 - `clean_template_dir` defaults to the packaged `cavotf/resources/DFTB_clean` directory. The templates are copied into each `trajectory_*` folder before submitting jobs.
 - `client_sbatch` and `server_sbatch` default to the packaged submission scripts. They are copied into the relevant working directories automatically.
-- `mu_submission_script` **must** point to a valid Slurm script that produces the `mu_results_filename` (defaults to `dmu.dat`) inside each run directory. The workflow will raise a clear error if the script cannot be found.
+- `mu_submission_script` **must** point to a valid Slurm script that produces the `mu_results_filename` (defaults to `dmu.dat`) inside each run directory. The workflow will raise a clear error if the script cannot be found. A minimal template `muDFTB.slurm` is shipped in `cavotf/resources/DFTB_clean` that simply writes a placeholder `dmu.dat`; replace its contents with your actual μ job.
 - `run_get_mu` toggles whether the μ jobs are submitted during staging; `run_dynamics` toggles whether the final server/clients are launched.
 - `cpus_per_job`, `partition`, and `account` are passed directly to `sbatch`; `DFTB_PREFIX` and `DFTB_COMMAND` are exported to the job environment if provided.
 
