@@ -8,8 +8,8 @@ def caldftb(atm, coordinates, box, force=True, charge=True):
     # proform single point DFTB calculation in periodic box and return forces and charges
     atoms = Atoms(atm,  positions =   coordinates) # atomic structure
     cell = np.array([[box, 0.0, 0.0],  # X-direction
-                    [0.0, box, 0.0],  # Y-direction
-                    [0.0, 0.0, box]]) # Z-direction
+                    [0.0, box, 0.0],   # Y-direction
+                    [0.0, 0.0, box]])  # Z-direction
 
     # Set the cell and enable periodic boundary conditions
     atoms.set_cell(cell)  # Set the unit cell
