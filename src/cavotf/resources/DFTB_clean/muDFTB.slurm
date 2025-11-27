@@ -9,12 +9,8 @@ set -euo pipefail
 
 # This template simply writes a placeholder mu value. Replace the body with the
 # real workflow your cluster uses to produce the dipole moment file.
-python - <<'PY'
-import numpy as np
-from pathlib import Path
 
-outfile = Path("dmu.dat")
-if not outfile.exists():
-    np.savetxt(outfile, np.array([0.0]))
-print(f"Wrote placeholder mu to {outfile.resolve()}")
-PY
+# Activate any environment you need here, for example:
+# [ -n "$CAVOTF_ACTIVATE" ] && source "$CAVOTF_ACTIVATE"
+
+python get_mu.py

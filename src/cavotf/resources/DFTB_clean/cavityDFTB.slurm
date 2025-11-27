@@ -7,8 +7,8 @@
 #SBATCH --mem=1000M              # Request 1000MB of memory
 #SBATCH --output=MDout.%j        # Output file (the %j will be replaced by the job ID)
 
-# Activate the Python virtual environment
-source /scratch/user/u.sw216206/sachithpy3/bin/activate
+# Activate any environment you need here, for example:
+# [ -n "$CAVOTF_ACTIVATE" ] && source "$CAVOTF_ACTIVATE"
 
 # Run the Python script
 python dftbLM.py
