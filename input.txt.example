@@ -1,0 +1,49 @@
+[general]
+n_trajectories = 4
+geometry_path = /scratch/user/u.aa271894/VSC/geometries/
+working_dir = .
+clean_template_dir = DEFAULT
+client_sbatch = DEFAULT
+server_sbatch = DEFAULT
+trajectory_prefix = trajectory_
+init_xyz_file = thermaliz_water__InTheBox.dat
+init_vel_file = thermaliz_water_vel__InTheBox.dat
+initial_position_target = initXYZ.dat
+initial_velocity_target = initPxPyPz.dat
+mu_results_filename = dmu.dat
+mu_poll_interval = 60
+mu_timeout_seconds = 0
+thermalization_multiplier = 50
+use_thermostat = yes
+thermostat_type = andersen
+thermostat_steps = 250
+collision_frequency = 0.001
+thermostat_reassign_particles = 16
+
+[geometry]
+geom_root_head = /scratch/user/u.aa271894/VSC/geometries/
+geom_root      = /scratch/user/u.aa271894/VSC/geometries/
+use_head_root  = true
+
+[physics]
+use_param_nk   = true       ; if true, N = param.nk, else use n_trajectories
+nk             = 25
+beta           = 1052.8
+lambda         = 0.001
+omega_c        = 0.190/27.2114
+eta_b          = 0.0003
+use_thermostat = true
+thermostat_type = andersen
+thermostat_steps = 250
+thermostat_reassign_particles = 16
+
+[hpc]
+cpus_per_job   = 8
+partition      = compute
+account        = myaccount
+mu_submission_script = muDFTB.slurm
+server_wait_seconds = 30
+run_get_mu     = true
+run_dynamics   = true
+dftb_prefix = /scratch/user/u.sw216206/dftb_sk_files/mio-1-1
+dftb_command = /scratch/user/u.aa271894/.conda/envs/dftbplus/bin/dftb+ > PREFIX.out
