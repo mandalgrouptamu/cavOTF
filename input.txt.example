@@ -1,0 +1,80 @@
+[general]
+# Folder containing one subfolder per geometry/trajectory seed
+geometry_path = ./geometries
+# File names inside each geometry folder
+init_xyz_file = thermaliz_water__InTheBox.dat
+init_vel_file = thermaliz_water_vel__InTheBox.dat
+trajectory_prefix = trajectory_
+# Optional: override the built-in clean template bundle
+# clean_template_dir = /path/to/custom/DFTB_clean
+# Thermostat controls
+use_thermostat = yes
+thermostat_type = andersen
+thermostat_steps = 250
+collision_frequency = 0.001
+thermostat_reassign_particles = 16
+
+[physics]
+# Number of trajectories/clients
+nk = 25
+beta = 1052.8
+lambda = 0.001
+omega_c = 0.190/27.2114
+eta_b = 0.0003
+# Photon and dipole controls
+use_thermostat = true
+thermostat_type = andersen
+thermostat_steps = 250
+thermostat_reassign_particles = 16
+calculate_dipole_derivatives = true
+# Write dipole derivatives every N steps
+dipole_derivative_interval = 10
+# Number of initial thermalization steps for cavity coordinates
+thermal_steps = 1000
+
+[outputs]
+# Control which artifacts are written during dynamics and server updates
+write_logfile = true
+write_results = true
+# Track k-space coordinates (qk, pk) from the server and optionally echo them
+record_k_space = true
+print_k_space = false
+# Client-side outputs
+write_xyz_trajectory = true
+write_histogram = true
+write_phase_space = true
+write_midpoint_snapshots = true
+
+[dftb]
+# Override any keyword passed to the ASE Dftb calculator (leave unset to use defaults)
+# Use "off" or "none" to remove a line entirely.
+Hamiltonian_SCCTolerance = 1e-5
+Hamiltonian_MaxSCCIterations = 400
+Hamiltonian_Mixer = Anderson { MixingParameter = 0.026 }
+Hamiltonian_ConvergentSccOnly = Yes
+Hamiltonian_MaxAngularMomentum_O = p
+Hamiltonian_MaxAngularMomentum_H = s
+Hamiltonian_Charge = 0.0
+Hamiltonian_ReadInitialCharges = Yes
+Hamiltonian_SpinConstants = {O = { -0.035 -0.030 -0.030 -0.028 } H = { -0.072 }}
+Options_WriteDetailedXml = No
+Options_WriteEigenvectors = No
+Options_WriteResultsTag = Yes
+kpts = (3, 3, 3)
+
+[hpc]
+cpus_per_job = 8
+partition = compute
+account = myaccount
+run_get_mu = true
+run_dynamics = true
+# Path to SK set used by DFTB+
+dftb_prefix = /path/to/dftb_sk_files/mio-1-1
+# Command used to launch DFTB+
+dftb_command = /path/to/dftb+ > PREFIX.out
+# Optional custom sbatch template
+sbatch_template = sbatch_template.sh.example
+# Walltime limit for generated sbatch scripts
+walltime = 2-00:00:00
+# Memory request for sbatch scripts
+memory = 80G
