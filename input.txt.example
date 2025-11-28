@@ -42,7 +42,7 @@ print_k_space = false
 # Client-side outputs
 write_xyz_trajectory = true
 write_histogram = true
-write_phase_space = true
+write_output_client = true
 write_midpoint_snapshots = true
 
 [dftb]

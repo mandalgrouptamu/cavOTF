@@ -71,7 +71,7 @@ def _default_output_config():
         print_k_space=False,
         write_xyz_trajectory=True,
         write_histogram=True,
-        write_phase_space=True,
+        write_output_client=True,
         write_midpoint_snapshots=True,
     )
 
@@ -82,6 +82,7 @@ def main():
     parser.add_argument("--workdir", type=str, default=None, help="Run directory containing input files")
     parser.add_argument("--base", type=str, default=None, help="Base directory containing server_hostname.txt")
     parser.add_argument("--config", type=str, default=None, help="Path to cavotf input.txt")
+    parser.add_argument("--atm-symbols", type=str, default="O33H66", help="Atomic symbols for the system (e.g., O33H66)")
     args = parser.parse_args()
 
     workdir = pathlib.Path(args.workdir) if args.workdir else pathlib.Path.cwd()
@@ -141,7 +142,7 @@ def main():
     dt2 = dt / 2
     thermal_steps = params.thermal_steps
 
-    atm = "O33H66"  # Legacy default
+    atm = args.atm_symbols  # Legacy default retained as the CLI default
     coordina_initial = np.loadtxt("initXYZ.dat", usecols=(2, 3, 4))
     velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
     coordinates = np.array(coordina_initial) * bhr
@@ -186,7 +187,7 @@ def main():
     pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
     f = None
-    if output_cfg.write_phase_space:
+    if output_cfg.write_output_client:
         f = open("qt.out", "w")
     x0 = -(2 / params.ωc) * μj * params.ηb
     dµ = getdµ(natoms, rj, μj, atm, box, dr=0.01)
@@ -195,7 +196,7 @@ def main():
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
     fxt = dpk(xk, μj, params)  # noqa: F405
     Tk = np.sum(pj**2 / (2 * masses))
-    if output_cfg.write_phase_space:
+    if output_cfg.write_output_client:
         print(output_format.format(0, xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
 
     def andersen_thermostat(Px, Py, Pz, mass, β, timestep, N_atoms):
@@ -231,7 +232,7 @@ def main():
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         pk += fxt * dt2
 
-        if output_cfg.write_phase_space and i % 2 == 0:
+        if output_cfg.write_output_client and i % 2 == 0:
             if f:
                 f.close()
             f = open("qt.out", "a")
@@ -241,7 +242,7 @@ def main():
                 print(i + 1, xk, pk, rj, pj, file=f2)
 
         Tk = np.sum(pj**2 / (2 * masses))
-        if output_cfg.write_phase_space:
+        if output_cfg.write_output_client:
             print(output_format.format((i + 1), xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
 
         coordinates = np.column_stack((rj[:natoms], rj[natoms:2 * natoms], rj[2 * natoms:3 * natoms]))
@@ -311,7 +312,7 @@ def main():
     dat["p"] = pk[0]
     comm(dat, host, port)
 
-    if output_cfg.write_phase_space and f:
+    if output_cfg.write_output_client and f:
         f.close()
 
 
