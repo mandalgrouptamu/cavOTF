@@ -1,10 +1,14 @@
-"""Shared server script for CAVOTF dynamics.
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        server_DFTB.py
+#  Author:      Sachith Wickramasinghe
+#  Modified by: Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Shared server script for cavOTF.py dynamics.
+# =============================================================================
 
-This adapts the legacy server_DFTB.py to operate from the project root
-without copying into each run directory. Configuration overrides from
-``input.txt`` are applied to keep cavity dimensions consistent with the
-number of active clients.
-"""
 from __future__ import annotations
 
 import argparse
@@ -26,12 +30,12 @@ from cavotf.resources import default_template_dir
 
 sys.path.append(str(default_template_dir()))
 
-from funcLM import param  # noqa: E402
+from funcLM import param 
 
 try:
     from cavotf.config import OutputConfig, load_config
     from cavotf.dynamics import _recompute_mode_grid
-except Exception:  # noqa: BLE001
+except Exception: 
     load_config = None
     _recompute_mode_grid = None
     OutputConfig = None
