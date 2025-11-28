@@ -1,4 +1,13 @@
-"""DFTB+ integration helpers."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dftb.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      DFTB+ integration routines.
+#      Note: I will consider renaming this script later to avoid conflict.
+# =============================================================================
 from __future__ import annotations
 
 import logging
@@ -12,12 +21,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def build_multiprog_commands(commands: Iterable[str]) -> List[str]:
-    """Return commands with numeric prefixes for SLURM multi-prog files."""
+    # Build multiprog commands with indices.
     return [f"{idx}  {cmd}" for idx, cmd in enumerate(commands)]
 
 
 def write_conf(commands: Iterable[str], path: Path, dry_run: bool = False) -> Path:
-    """Write a multi-prog configuration file."""
+    # Write the multiprog configuration file.
     lines = list(commands)
     LOGGER.debug("Writing multiprog configuration to %s", path)
     if not dry_run:
@@ -26,7 +35,7 @@ def write_conf(commands: Iterable[str], path: Path, dry_run: bool = False) -> Pa
 
 
 def prepare_get_mu(config: Config, run_dirs: List[Path], dry_run: bool = False) -> Path:
-    """Generate the get_mu multiprog file."""
+    # Generate the get_mu multiprog file.
     base = config.path.parent
     script = config.general.clean_template_dir / "get_mu.py"
     config_arg = f"--config {config.path}"
@@ -36,7 +45,7 @@ def prepare_get_mu(config: Config, run_dirs: List[Path], dry_run: bool = False) 
 
 
 def prepare_run(config: Config, run_dirs: List[Path], dry_run: bool = False) -> Path:
-    """Generate the main run multiprog file (server + clients)."""
+    # Generate the main run multiprog file (server + clients).
     base = config.path.parent
     config_arg = f"--config {config.path}"
     server_script = server_script_path()
