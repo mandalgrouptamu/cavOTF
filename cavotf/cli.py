@@ -1,4 +1,14 @@
-"""Command-line interface for CAVOTF."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        cli.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Command-line interface for cavOTF.py simulations, including argument
+#      parsing and workflow execution.
+# =============================================================================
+
 from __future__ import annotations
 
 import argparse
@@ -29,7 +39,8 @@ def _print_banner() -> None:
  █▄▄▌▐▙▄█▌ ▐█▌ ▗▄█▄▖ ▐▙▄   █▌  █▄█   █  ▐▌     █  ▐█▄█▘  █▌
   ▀▀  ▀▀▝▘  ▀  ▝▀▀▀▘  ▀▀   █   ▝▀▘   ▀  ▝▘     ▀  ▐▌▀▘   █
                           █▌                      ▐▌    █▌
-       Mandal Group, TAMU
+============Mandal Group, TAMU===============================
+====2025=====================================================
 """
     )
 
