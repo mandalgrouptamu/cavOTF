@@ -1,4 +1,14 @@
-"""Orchestration of the CAVOTF workflow."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        workflow.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Workflow management for cavOTF.py simulations, including validation and execution.
+# =============================================================================
+
+
 from __future__ import annotations
 
 import logging
@@ -16,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def validate_workflow(config: Config) -> None:
-    """Perform a dry-run validation and log planned actions."""
+    # This routine performs a dry run of the workflow to validate configurations without executing any jobs.
     LOGGER.info("Validating workflow from %s", config.path)
     run_dirs = prepare_run_directories(config, dry_run=True)
     get_mu_conf = prepare_get_mu(config, run_dirs, dry_run=True)
@@ -34,7 +44,7 @@ def validate_workflow(config: Config) -> None:
 
 
 def run_workflow(config: Config) -> None:
-    """Execute the workflow following the legacy scripts."""
+    # This routine executes the full workflow, including job submission and monitoring.
     LOGGER.info("Running workflow from %s", config.path)
     run_dirs = prepare_run_directories(config, dry_run=False)
 
@@ -45,7 +55,7 @@ def run_workflow(config: Config) -> None:
         submit_job(script_path, dry_run=False)
         _wait_for_dipoles(run_dirs)
 
-    # Initialize cavity coordinates using dmu.dat produced by get_mu
+    # Initialize cavity coordinates using dmu.dat produced by get_mu.
     initialize_cavity(config, run_dirs, dry_run=False)
 
     run_conf = prepare_run(config, run_dirs, dry_run=False)
@@ -56,7 +66,7 @@ def run_workflow(config: Config) -> None:
 
 
 def _wait_for_dipoles(run_dirs: list[Path], poll_interval: int = 30, timeout: Optional[int] = None) -> None:
-    """Block until every ``dmu.dat`` file exists in the provided run directories."""
+    # This routine waits for all dmu.dat files to be produced, then proceeds.
 
     missing = _missing_dipoles(run_dirs)
     if not missing:
@@ -72,7 +82,7 @@ def _wait_for_dipoles(run_dirs: list[Path], poll_interval: int = 30, timeout: Op
         time.sleep(poll_interval)
         missing = _missing_dipoles(run_dirs)
 
-    LOGGER.info("All dmu.dat files detected; proceeding to cavity initialization")
+    LOGGER.info("All dmu.dat files detected; proceeding ...")
 
 
 def _missing_dipoles(run_dirs: list[Path]) -> set[Path]:
