@@ -172,15 +172,13 @@ class Config:
 
 
 class ConfigError(RuntimeError):
-    # Parsing Fails.
-
-
+    """Parsing fails."""
+    
 class MissingOptionError(ConfigError):
-    # Required option is missing.
-
-
+    """Required option is missing."""
+    
 class InvalidOptionError(ConfigError):
-    # Option has invalid value.
+    """Option has invalid value."""
 
 
 def _require(section: configparser.SectionProxy, option: str) -> str:
