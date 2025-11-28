@@ -1,4 +1,15 @@
-"""Configuration management for the CAVOTF workflow."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        config.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Configuration management for cavOTF.py simulations, including parameter
+#      handling and validation. This file controls the input options for the
+#      cavOTF.py workflow.
+# =============================================================================
+
 from __future__ import annotations
 
 import configparser
@@ -13,7 +24,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _parse_bool(value: str) -> bool:
-    """Parse a string to boolean."""
+    # Make sure to parse boolean values robustly! Include every common variant.
     normalized = value.strip().lower()
     if normalized in {"1", "true", "yes", "on"}:
         return True
@@ -23,7 +34,9 @@ def _parse_bool(value: str) -> bool:
 
 
 def _parse_float(value: str) -> float:
-    """Parse a float value that may be expressed as a simple expression."""
+    # Gracefully handle float parsing, including simple expressions! 
+    # Maybe useful for legacy inputs, maybe not.
+    # Might consider removing this later and enforcing strict float inputs.
     try:
         return float(value)
     except ValueError:
@@ -36,7 +49,9 @@ def _parse_float(value: str) -> float:
 
 @dataclasses.dataclass
 class GeneralConfig:
-    """General workflow settings."""
+    # General settings for the simulation.
+    # I should consider permanently moving thermostat settings to PhysicsConfig later
+    # it does feel more appropriate there!
 
     geometry_path: Path
     init_xyz_file: str
@@ -52,7 +67,7 @@ class GeneralConfig:
 
 @dataclasses.dataclass
 class PhysicsConfig:
-    """Physical parameters controlling the cavity dynamics."""
+    # Cavity parameters and physical settings.
 
     nk: int
     beta: float
@@ -70,7 +85,9 @@ class PhysicsConfig:
 
 @dataclasses.dataclass
 class HPCConfig:
-    """HPC submission settings."""
+    # HPC-related settings for job submission.
+    # I might consider adding support for different sbatch templates for each
+    # job type later if needed.
 
     cpus_per_job: int = 1
     partition: Optional[str] = None
@@ -80,13 +97,14 @@ class HPCConfig:
     dftb_prefix: Optional[Path] = None
     dftb_command: Optional[str] = None
     sbatch_template: Optional[Path] = None
+
     walltime: str = "2-00:00:00"
     memory: str = "80G"
 
 
 @dataclasses.dataclass
 class OutputConfig:
-    """Controls which simulation artifacts are produced."""
+    # Output control settings.
 
     write_logfile: bool = True
     write_results: bool = True
@@ -100,13 +118,14 @@ class OutputConfig:
 
 @dataclasses.dataclass
 class DFTBConfig:
-    """Calculator overrides for the embedded DFTB+ driver."""
+    # DFTB+ calculator options
+    # Generates DFTB+ input.
 
     parameters: dict[str, object]
 
     @staticmethod
     def defaults() -> "DFTBConfig":
-        """Return default calculator options matching the packaged template."""
+        # Default DFTB+ parameters for cavOTF.py simulations suited for O33H66 system ONLY!
         return DFTBConfig(
             parameters={
                 "label": "O33H66",
@@ -129,7 +148,8 @@ class DFTBConfig:
         )
 
     def merged(self, overrides: dict[str, object]) -> "DFTBConfig":
-        """Return a new config with overrides applied ("off" removes a key)."""
+        # Return a new DFTBConfig with overridden parameters.
+        # Gracefully handle None values to remove parameters.
         merged = dict(self.parameters)
         for key, value in overrides.items():
             if value is None:
@@ -141,7 +161,7 @@ class DFTBConfig:
 
 @dataclasses.dataclass
 class Config:
-    """Top-level configuration container."""
+    # Complete configuration for a cavOTF.py simulation.
 
     path: Path
     general: GeneralConfig
@@ -152,15 +172,15 @@ class Config:
 
 
 class ConfigError(RuntimeError):
-    """Raised when configuration parsing fails."""
+    # Parsing Fails.
 
 
 class MissingOptionError(ConfigError):
-    """Raised when a required option is missing."""
+    # Required option is missing.
 
 
 class InvalidOptionError(ConfigError):
-    """Raised when an option cannot be parsed."""
+    # Option has invalid value.
 
 
 def _require(section: configparser.SectionProxy, option: str) -> str:
@@ -200,7 +220,7 @@ def _load_outputs(config: configparser.ConfigParser) -> OutputConfig:
 
 
 def _parse_value(raw: str) -> object:
-    """Parse a configuration value into Python types when possible."""
+    # Parse a raw string value into an appropriate Python type.
     import ast
 
     normalized = raw.strip()
@@ -218,7 +238,8 @@ def _parse_value(raw: str) -> object:
 
 
 def _clean_string_value(value: str) -> str:
-    """Normalize calculator text blocks to avoid DFTB+ parse errors."""
+    # Clean up string values by collapsing whitespace and removing newlines
+    # Avoid unintended formatting issues in DFTB+ input.
 
     collapsed = value.replace("\\n", " ").replace("\\\n", " ")
     collapsed = " ".join(collapsed.split())
@@ -347,7 +368,7 @@ def _load_hpc(config: configparser.ConfigParser, base: Path) -> HPCConfig:
 
 
 def load_config(path: Path) -> Config:
-    """Load and validate the configuration file."""
+    # Load and parse the configuration file at the given path.
     absolute_path = path.expanduser().resolve()
     if not absolute_path.is_file():
         raise ConfigError(f"Config file not found: {absolute_path}")
