@@ -94,7 +94,7 @@ class OutputConfig:
     print_k_space: bool = False
     write_xyz_trajectory: bool = True
     write_histogram: bool = True
-    write_phase_space: bool = True
+    write_output_client: bool = True
     write_midpoint_snapshots: bool = True
 
 
@@ -180,6 +180,13 @@ def _load_outputs(config: configparser.ConfigParser) -> OutputConfig:
     def _get_bool(option: str, default: bool) -> bool:
         return _parse_bool(section.get(option, str(default)))
 
+    if "write_output_client" in section:
+        write_output_client = _get_bool("write_output_client", True)
+    elif "write_phase_space" in section:
+        write_output_client = _parse_bool(section["write_phase_space"])
+    else:
+        write_output_client = True
+
     return OutputConfig(
         write_logfile=_get_bool("write_logfile", True),
         write_results=_get_bool("write_results", True),
@@ -187,7 +194,7 @@ def _load_outputs(config: configparser.ConfigParser) -> OutputConfig:
         print_k_space=_get_bool("print_k_space", False),
         write_xyz_trajectory=_get_bool("write_xyz_trajectory", True),
         write_histogram=_get_bool("write_histogram", True),
-        write_phase_space=_get_bool("write_phase_space", True),
+        write_output_client=write_output_client,
         write_midpoint_snapshots=_get_bool("write_midpoint_snapshots", True),
     )
 

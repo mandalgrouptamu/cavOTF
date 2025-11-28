@@ -56,6 +56,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--workdir", type=str, default=None, help="Directory containing initXYZ.dat and initPxPyPz.dat")
     parser.add_argument("--config", type=str, default=None, help="Path to cavotf input.txt")
+    parser.add_argument("--atm-symbols", type=str, default=ATM_SYMBOLS, help="Atomic symbols for the system (e.g., O33H66)")
     args = parser.parse_args()
 
     workdir = pathlib.Path(args.workdir) if args.workdir else pathlib.Path.cwd()
@@ -79,7 +80,9 @@ def main() -> None:
     velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
     coordinates = np.array(coordina_initial) * bhr  # a.u.
 
-    atoms = Atoms(ATM_SYMBOLS, positions=coordinates / bhr)
+    atm_symbols = args.atm_symbols
+
+    atoms = Atoms(atm_symbols, positions=coordinates / bhr)
     mass = atoms.get_masses() * 1822.8884
     box = params.box
     atoms.set_cell([box, box, box])
@@ -94,7 +97,7 @@ def main() -> None:
     rj = np.concatenate((rxj, ryj, rzj))
     Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
 
-    fj, charges = getForcesCharges(rj, natoms, ATM_SYMBOLS, box)
+    fj, charges = getForcesCharges(rj, natoms, atm_symbols, box)
     µj = np.sum(charges * rxj)
 
     np.savetxt("dmu.dat", [µj], fmt="%.6f")
