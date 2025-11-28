@@ -1,4 +1,12 @@
-"""Geometry preparation utilities."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        geometry.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Geometry preparation utilities for cavOTF.py simulations.
+# =============================================================================
 from __future__ import annotations
 
 import logging
@@ -21,7 +29,7 @@ def _copy_tree(src: Path, dst: Path) -> None:
 
 
 def collect_geometry_cases(geometry_path: Path) -> List[Path]:
-    """Return all geometry subdirectories under the provided path."""
+    # Retrieve all subdirectories under the specified geometry path.
     if not geometry_path.is_dir():
         raise FileNotFoundError(f"Geometry path does not exist: {geometry_path}")
     entries = [p for p in geometry_path.iterdir() if p.is_dir()]
@@ -31,7 +39,7 @@ def collect_geometry_cases(geometry_path: Path) -> List[Path]:
 
 
 def prepare_run_directories(config: Config, dry_run: bool = False) -> List[Path]:
-    """Create run directories and populate them with template and geometry files."""
+    # Create run directories, each initialized with geometry and velocity files.
     logger = LOGGER.getChild("prepare")
     cases = collect_geometry_cases(config.general.geometry_path)
     if len(cases) < config.physics.nk:

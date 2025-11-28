@@ -1,4 +1,13 @@
-"""Cavity dynamics utilities derived from the legacy scripts."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dynamics.py
+#  Author:      Sachith Wickramasinghe
+#  Modified by: Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#     Functions to initialize and propagate cavity dynamics.
+# =============================================================================
 from __future__ import annotations
 
 import importlib
@@ -17,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def load_param(clean_template_dir: Path, config: Config):
-    """Load the legacy ``param`` class from the clean template directory and override fields."""
+    # Load parameters
     sys.path.insert(0, str(clean_template_dir))
     funcLM = importlib.import_module("funcLM")
     param_obj = funcLM.param()
@@ -38,12 +47,6 @@ def load_param(clean_template_dir: Path, config: Config):
 
 
 def _recompute_mode_grid(param_obj) -> None:
-    """Update mode-dependent parameters after overrides.
-
-    The legacy ``param`` class computes ``nk``, ``ωk`` and related values in
-    ``__init__``. When we override ``nk`` or ``ωc`` from the configuration we
-    must recalculate the dependent arrays to keep dimensions consistent.
-    """
 
     Lx = 200000 * 4
     param_obj.ω0 = param_obj.ωc
@@ -77,7 +80,7 @@ def pdot(q, p, muj, param):
     return dp
 
 
-def vvl(q, p, μj, param):  # all degrees of freedom
+def vvl(q, p, μj, param): 
     ndof = len(q)
     β = param.β
     λ = param.λ
@@ -126,7 +129,9 @@ def init(μj, param):
 
 
 def initialize_cavity(config: Config, run_dirs: List[Path], dry_run: bool = False) -> None:
-    """Reproduce the legacy initialization from ``run_second.py`` and write initial.dat files."""
+    # Initialize cavity dynamics and write initial conditions to each run directory
+    # This routine replaces the legacy run_second.py script.
+    
     logger = LOGGER.getChild("init")
     param = load_param(config.general.clean_template_dir, config)
     mu_values = []
