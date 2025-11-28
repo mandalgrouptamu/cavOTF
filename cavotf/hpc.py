@@ -1,4 +1,13 @@
-"""HPC helpers for rendering and submitting sbatch scripts."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        workflow.py
+#  Author:      Amir H. Amini <amiramini@tamu.edu>
+#  Last update: 11/28/2025
+#
+#  Description:
+#      Management for sbatch script generation and job submission to HPC systems.
+# =============================================================================
+
 from __future__ import annotations
 
 import logging
@@ -37,7 +46,8 @@ def _render_template(template: str, context: Dict[str, str]) -> str:
 
 
 def render_sbatch(config: Config, conf_path: Path, job_name: str, ntasks: int) -> str:
-    """Render an sbatch script using the configured or default template."""
+    # This routine generates an sbatch script text based on the provided 
+    # configuration and template.
     template_path = config.hpc.sbatch_template
     if template_path:
         template_text = template_path.read_text()
@@ -69,6 +79,7 @@ def write_sbatch(script_text: str, path: Path, dry_run: bool = False) -> Path:
 
 
 def submit_job(script_path: Path, dry_run: bool = False) -> None:
+    # This routine submits the sbatch script to the job scheduler.
     cmd = ["sbatch", str(script_path)]
     LOGGER.info("Submitting job: %s", " ".join(cmd))
     if dry_run:
