@@ -65,6 +65,22 @@ def apply_config_overrides(params, cfg):
     set_calculator_options(cfg.dftb.parameters)
 
 
+def _write_input_summary(cfg, params, atm_symbols: str, destination: pathlib.Path) -> None:
+    lines = [
+        f"Simulation run with configuration: {cfg.path}",
+        f"Atomic symbols: {atm_symbols}",
+        f"nk={params.nk}",
+        f"beta={params.β}",
+        f"lambda={params.λ}",
+        f"omega_c={params.ωc}",
+        f"eta_b={params.ηb}",
+        f"steps={params.steps}",
+        f"dt={params.dt}",
+        f"thermal_steps={params.thermal_steps}",
+    ]
+    destination.write_text("\n".join(lines) + "\n")
+
+
 def _default_output_config():
     if OutputConfig:
         return OutputConfig()
@@ -100,6 +116,7 @@ def main():
     idx = args.idx
     output_cfg = _default_output_config()
     params = param()
+    atm = args.atm_symbols  # Legacy default retained as the CLI default
 
     derivative_interval = 5
     if args.config and load_config and _recompute_mode_grid:
@@ -108,6 +125,7 @@ def main():
             apply_config_overrides(params, cfg)
             derivative_interval = cfg.physics.dipole_derivative_interval
             output_cfg = cfg.outputs
+            _write_input_summary(cfg, params, atm, workdir / "input.cav")
         except Exception as exc:  # noqa: BLE001
             print(f"Warning: failed to apply config overrides: {exc}")
 
@@ -122,8 +140,6 @@ def main():
     dt = params.dt
     dt2 = dt / 2
     thermal_steps = params.thermal_steps
-
-    atm = args.atm_symbols  # Legacy default retained as the CLI default
     coordina_initial = np.loadtxt("initXYZ.dat", usecols=(2, 3, 4))
     velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
     coordinates = np.array(coordina_initial) * bhr
