@@ -1,10 +1,19 @@
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dftb.py
+#  Author:      Sachith Wickramasinghe
+#  Last update: 11/28/2025
+#
+#  Description:
+#  parameters and functions.
+# =============================================================================
+
 import numpy as np
 from numpy.random import normal as gran
 
 def dpk(x, µ, par):
     ηb = par.ηb
     ωc = par.ωc
-    #return -ωc**2 * x  - ηb * µ
     return  - ηb * µ
 
 def dpkT(x, µ, par):
@@ -18,8 +27,7 @@ def dpj(x, fj, dµ, μ, par):
     ηb = par.ηb
     ωc = par.ωc
 
-    #return fj  - (ηb**2 * dµ * µ /ωc**2) # No lignt-matter interaction for the bath modes with DSE
-    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) # Light-matter interaction for the bath modes with DSE
+    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) 
 
 def vvl(x, p, µ, param, f1): #only for 1 cavity
     ndof = 1
@@ -49,7 +57,7 @@ def init(μ, param): # initialize the xk, pk
 
     σp = (1/β)**0.5
     σK = σp/ωc
-    x0 = - (2/ωc) * μ * param.ηb 
+    x0 = - (1/ωc**2) * μ * param.ηb 
   
 
     #-------- define initial positions and momennam for cavity ----------
@@ -64,28 +72,30 @@ class param:
     def __init__(self, ωc = 0.190/27.2114):
         self.ωc = ωc
         self.ω0 = ωc
-        self.β  = 1052.8
+        self.β  = 1052.8 #* (300.0/200.0)
         self.λ = 0.001
         self.natoms = 99 # number of atoms in the MD simulation
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
 
-        totaltime    = 1000   # total simulation time in fs
-        thermal_time = 10000   # thermalization time in fs
-        dt           = 0.5    #time step in fs
+        totaltime    = 3000   # total simulation time in fs
+        thermal_time = 50000   # thermalization time in fs
+        dt           = 0.3    #time step in fs
 
         self.steps = int(totaltime // dt)
         self.dt = dt * 41.3413733365614
         self.thermal_steps = int(thermal_time // dt)
 
-        self.dL = 20
-        self.nk = 25
-
-        self.ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (self.dL * self.nk)
-        self.ωk = np.sqrt(self.ωc**2 + (self.c * self.ky)**2)
+        Lx = 200000 * 4
+        self.nk = 81
+        self.dL = Lx/self.nk
  
+
+        ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (Lx)
+        self.ωk = np.sqrt(self.ω0**2 + (self.c * ky)**2)
+        self.ωk[self.ωk> 5 * self.ω0] = 5 * self.ω0
         self.m = 1.0
           
-        self.ηb = 0.0003  #0.007 
+        self.ηb = 0.0002  #0.007 
 
 
