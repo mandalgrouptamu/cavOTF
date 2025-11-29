@@ -1,4 +1,4 @@
-![CavityOTF](/logo.png)
+<img src="/logo.png" alt="CavityOTF" width="500"/>
 
 # cavOTF.py
 
