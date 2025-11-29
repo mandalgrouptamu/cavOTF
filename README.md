@@ -1,4 +1,4 @@
-# cavOTF.py
+# cavOTF
 <p align="center">
   <img src="/logo.png" alt="CavityOTF" width="300"/>
 </p>
