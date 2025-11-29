@@ -119,11 +119,13 @@ def main():
     atm = args.atm_symbols  # Legacy default retained as the CLI default
 
     derivative_interval = 5
+    calculate_dipole_derivatives = True
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
             apply_config_overrides(params, cfg)
             derivative_interval = cfg.physics.dipole_derivative_interval
+            calculate_dipole_derivatives = cfg.physics.calculate_dipole_derivatives
             output_cfg = cfg.outputs
             _write_input_summary(cfg, params, atm, workdir / "input.cav")
         except Exception as exc:  # noqa: BLE001
@@ -187,7 +189,8 @@ def main():
     if output_cfg.write_output_client:
         f = open("qt.out", "w")
     x0 = -(2 / params.ωc) * μj * params.ηb
-    dµ = getdµ(natoms, rj, μj, atm, box, dr=0.01)
+    derivative_displacement = 0.01 if calculate_dipole_derivatives else False
+    dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
     output_format = "{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}"
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
@@ -209,7 +212,22 @@ def main():
         Pz_new[reassign] = np.random.normal(0, std_dev)
         return Px_new, Py_new, Pz_new
 
-    def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params, output_cfg, i):
+    def calculation(
+        rj,
+        pj,
+        xk,
+        pk,
+        fj,
+        μj,
+        dµ,
+        f,
+        params,
+        output_cfg,
+        derivative_interval,
+        calculate_dipole_derivatives,
+        derivative_displacement,
+        i,
+    ):
         pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2  # noqa: F405
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         rj += pj * dt / masses
@@ -219,8 +237,8 @@ def main():
         Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
         μj = np.sum(charges * (rj[:natoms] - Rcom))
 
-        if i % derivative_interval == 0:
-            dµ = getdµ(natoms, rj, μj, atm, box, dr=0.01)
+        if calculate_dipole_derivatives and i % derivative_interval == 0:
+            dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
         fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
         fxt = dpk(xk, μj, params)  # noqa: F405
@@ -295,6 +313,9 @@ def main():
             f,
             params,
             output_cfg,
+            derivative_interval,
+            calculate_dipole_derivatives,
+            derivative_displacement,
             i,
         )
         dat["step"] = i + 1
