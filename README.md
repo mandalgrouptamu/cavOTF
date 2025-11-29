@@ -3,11 +3,11 @@
   <img src="/logo.png" alt="CavityOTF" width="300"/>
 </p>
 
-**cavOTF.py** is a highly customizable molecular dynamics package based on DFTB+ (Density Functional Tight Binding) for simulating cavity systems. Due to the computational intensity and long runtimes, this package is designed for use on High Performance Computing (HPC) systems.
+**cavOTF** is a highly customizable molecular dynamics package based on DFTB+ (Density Functional Tight Binding) for simulating cavity systems. Due to the computational intensity and long runtimes, this package is designed for use on High Performance Computing (HPC) systems.
 
 ## Installation
 
-Before installing **cavOTF.py**, ensure that you have a clean DFTB+ installation in your environment. For instructions, refer to the [DFTB+ Installation Guide](https://dftbplus-recipes.readthedocs.io/en/latest/introduction.html). We recommend installing DFTB+ using the **Anaconda** package manager within a separate environment dedicated solely to DFTB+. Avoid using pre-compiled DFTB+ binaries as they may significantly reduce the performance of your calculations. **cavOTF** has been tested with the **no MPI** version of DFTB+, so it is advisable to use this version, as `numpy` and/or `scipy` may have compatibility issues with some MPI installations.
+Before installing **cavOTF**, ensure that you have a clean DFTB+ installation in your environment. For instructions, refer to the [DFTB+ Installation Guide](https://dftbplus-recipes.readthedocs.io/en/latest/introduction.html). We recommend installing DFTB+ using the **Anaconda** package manager within a separate environment dedicated solely to DFTB+. Avoid using pre-compiled DFTB+ binaries as they may significantly reduce the performance of your calculations. **cavOTF** has been tested with the **no MPI** version of DFTB+, so it is advisable to use this version, as `numpy` and/or `scipy` may have compatibility issues with some MPI installations.
 
 The package uses the **setuptools** build system and includes most required Python modules and resource templates. Ensure you have an up-to-date version of `setuptools` before installation.
 
