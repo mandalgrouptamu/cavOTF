@@ -20,7 +20,7 @@ pip install .
 Alternatively, you can install directly from the repository:
 
 ```bash
-pip install git+https://<repo-url>
+pip install git+[https://<repo-url>](https://github.com/mandalgrouptamu/cavOTF.git)
 ```
 
 ### Available Entry Points
