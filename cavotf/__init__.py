@@ -1,5 +1,3 @@
-"""CAVOTF package entry point."""
-
 from .config import Config, OutputConfig, load_config
 from .workflow import run_workflow, validate_workflow
 
