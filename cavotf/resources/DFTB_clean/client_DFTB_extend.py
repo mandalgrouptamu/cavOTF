@@ -1,3 +1,12 @@
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        Client_DFTB_extend.py
+#  Author:      Sachith Wickramasinghe 
+#  Last update: 11/28/2025
+#
+#  Description:
+#  This file is currently not in use, I'll consider using it later if needed.
+# =============================================================================
 import os
 import numpy as np
 import re
@@ -14,6 +23,11 @@ from funcLM import *
 import socket, sys, time, json
 import numpy as np
 
+time.sleep(30)
+
+current_file_path = os.path.abspath(__file__)
+current_directory = os.path.dirname(current_file_path)
+os.chdir(current_directory)
 
 
 
@@ -73,11 +87,9 @@ dt = params.dt
 dt2 = dt/2
 thermal_steps = params.thermal_steps
 
-os.system('export DFTB_PREFIX=/home/sachith/vsc-fluxside/dftb_sk_files/mio-1-1/')
-os.environ['DFTB_PREFIX'] = '/home/sachith/vsc-fluxside/dftb_sk_files/mio-1-1/'
-os.system('export A="/home/sachith/vsc-fluxside/dftb_package/dftbplus-24.1.x86_64-linux/bin/dftb+ "')
+os.system('export DFTB_PREFIX=/scratch/user/u.aa271894/VSC/mio-1-1')
+os.environ['DFTB_PREFIX'] = '/scratch/user/u.aa271894/VSC/mio-1-1'
 
-os.environ["DFTB_COMMAND"] = "/home/sachith/vsc-fluxside/dftb_package/dftbplus-24.1.x86_64-linux/bin/dftb+"
 
 atm = 'O33H66' # Define the atomic structure
 
@@ -141,7 +153,7 @@ pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
 f = open('qt.out', 'a') # Open the file in write mode
 x0 = - (2/params.ωc) * μj * params.ηb 
-dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+dµ = getdµ(natoms, rj, μj, atm, box, dr=0.01)
 
 output_format = '{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}'
 fjt = dpj(xk, fj[:natoms], dµ, μj, params)
@@ -202,7 +214,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     μj = np.sum(charges * (rj[:natoms] - Rcom))
 
     if i % 5 == 0:
-        dµ = getdµ(natoms, rj, μj, atm, box, dr=0.0001)
+        dµ = getdµ(natoms, rj, μj, atm, box, dr=0.01)
 
     # Update the momenta vv4
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)
@@ -215,7 +227,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
 
     pk += fxt * dt2
 
-    if i < 250:
+    if i < 65:
         # Apply Andersen thermostat
         collision_freq = 0.001
         pj[:natoms], pj[natoms:2*natoms], pj[2*natoms:3*natoms] = andersen_thermostat(
