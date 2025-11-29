@@ -1,4 +1,12 @@
-"""Legacy get_mu script wired for shared templates and config overrides."""
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dftb.py
+#  Author:      Sachith Wickramasinghe
+#  Last update: 11/28/2025
+#
+#  Description:
+#  DFTB+ input generator and dmu calculator.
+# =============================================================================
 from __future__ import annotations
 
 import argparse
@@ -91,7 +99,7 @@ def main() -> None:
     coordinates = atoms.get_positions(wrap=False) * bhr
     atoms.set_positions(coordinates / bhr)
 
-    write("WaterMD_Cavity.xyz", atoms, format="xyz", append=True)
+    write("coordinates.xyz", atoms, format="xyz", append=True)
 
     rxj, ryj, rzj = coordinates[:, 0], coordinates[:, 1], coordinates[:, 2]
     rj = np.concatenate((rxj, ryj, rzj))

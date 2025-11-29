@@ -1,10 +1,19 @@
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dftb.py
+#  Author:      Sachith Wickramasinghe
+#  Last update: 11/28/2025
+#
+#  Description:
+#  parameters and functions.
+# =============================================================================
+
 import numpy as np
 from numpy.random import normal as gran
 
 def dpk(x, µ, par):
     ηb = par.ηb
     ωc = par.ωc
-    #return -ωc**2 * x  - ηb * µ
     return  - ηb * µ
 
 def dpkT(x, µ, par):
@@ -18,8 +27,7 @@ def dpj(x, fj, dµ, μ, par):
     ηb = par.ηb
     ωc = par.ωc
 
-    #return fj  - (ηb**2 * dµ * µ /ωc**2) # No lignt-matter interaction for the bath modes with DSE
-    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) # Light-matter interaction for the bath modes with DSE
+    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) 
 
 def vvl(x, p, µ, param, f1): #only for 1 cavity
     ndof = 1

@@ -1,3 +1,13 @@
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        dftb.py
+#  Author:      Sachith Wickramasinghe
+#  Last update: 11/28/2025
+#
+#  Description:
+#  DFTB+ input generator and dmu calculator.
+# =============================================================================
+
 import os
 import numpy as np
 #from ase.build import molecule

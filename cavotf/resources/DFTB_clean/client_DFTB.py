@@ -1,9 +1,13 @@
-"""Shared client script for CAVOTF dynamics.
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        client_DFTB.py
+#  Author:      Sachith Wickramasinghe
+#  Last update: 11/28/2025
+#
+#  Description:
+#  This is the main client file to perform DFTB based MD simulations with cavOTF.py.
+# =============================================================================
 
-Runs from a centralized location without copying into each run directory.
-Configuration overrides from ``input.txt`` are applied to keep cavity
-parameters consistent across server and clients.
-"""
 from __future__ import annotations
 
 import argparse
@@ -108,29 +112,6 @@ def main():
             print(f"Warning: failed to apply config overrides: {exc}")
 
     time.sleep(30)
-
-    print(r"""
-  ▄▄             █             ▗▄▖ ▗▄▄▄▖▗▄▄▄▖
- █▀▀▌            ▀   ▐▌        █▀█ ▝▀█▀▘▐▛▀▀▘
-▐▛    ▟██▖▐▙ ▟▌ ██  ▐███ ▝█ █▌▐▌ ▐▌  █  ▐▌        ▐▙█▙ ▝█ █▌
-▐▌    ▘▄▟▌ █ █   █   ▐▌   █▖█ ▐▌ ▐▌  █  ▐███      ▐▛ ▜▌ █▖█
-▐▙   ▗█▀▜▌ ▜▄▛   █   ▐▌   ▐█▛ ▐▌ ▐▌  █  ▐▌        ▐▌ ▐▌ ▐█▛
- █▄▄▌▐▙▄█▌ ▐█▌ ▗▄█▄▖ ▐▙▄   █▌  █▄█   █  ▐▌     █  ▐█▄█▘  █▌
-  ▀▀  ▀▀▝▘  ▀  ▝▀▀▀▘  ▀▀   █   ▝▀▘   ▀  ▝▘     ▀  ▐▌▀▘   █
-                          █▌                      ▐▌    █▌
-       Mandal Group, TAMU
-""")
-    print("══════════════════════════════════════════════════════")
-    print("   CALCULATIONS EXECUTED BY AMIR H. AMINI (Nov–Dec 2025)")
-    print("   Texas A&M University | College Station, TX")
-    print("══════════════════════════════════════════════════════")
-    print("   IMPORTANT NOTICE")
-    print("   These results should be used with extreme caution.")
-    print("   This code is experimental and not a final, polished release.")
-    print("   If reused for independent simulations, ensure it is thoroughly")
-    print("   reviewed, debugged, and validated prior to application.")
-    print("══════════════════════════════════════════════════════")
-    print("   INITIATING COMPUTATIONAL ROUTINE...")
 
     t0 = time.time()
     bhr = 1.8897259886

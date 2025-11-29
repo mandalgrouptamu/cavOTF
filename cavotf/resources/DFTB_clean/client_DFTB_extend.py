@@ -1,3 +1,12 @@
+# =============================================================================
+#  Project:     cavOTF.py
+#  File:        Client_DFTB_extend.py
+#  Author:      Sachith Wickramasinghe 
+#  Last update: 11/28/2025
+#
+#  Description:
+#  This file is currently not in use, I'll consider using it later if needed.
+# =============================================================================
 import os
 import numpy as np
 import re
