@@ -1,7 +1,7 @@
-<img src="/logo.png" alt="CavityOTF" width="500"/>
-
 # cavOTF.py
-
+<p align="center">
+  <img src="/logo.png" alt="CavityOTF" width="300"/>
+</p>
 **cavOTF.py** is a highly customizable molecular dynamics package based on DFTB+ (Density Functional Tight Binding) for simulating cavity systems. Due to the computational intensity and long runtimes, this package is designed for use on High Performance Computing (HPC) systems.
 
 ## Installation
