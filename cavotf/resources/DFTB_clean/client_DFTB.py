@@ -186,8 +186,18 @@ def main():
     pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
     f = None
+    outfile = "qt.out"
+    header = "# step    xk              pk              mu              fxt             fjt             Tk\n"
+    
     if output_cfg.write_output_client:
-        f = open("qt.out", "w")
+        # If file already exists and is non-empty, just append without header
+        if os.path.exists(outfile) and os.path.getsize(outfile) > 0:
+            f = open(outfile, "a")
+        else:
+            # First time: create and write header
+            f = open(outfile, "w")
+            f.write(header)
+
     x0 = -(2 / params.ωc) * μj * params.ηb
     derivative_displacement = 0.01 if calculate_dipole_derivatives else False
     dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
