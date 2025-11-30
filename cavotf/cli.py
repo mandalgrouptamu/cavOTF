@@ -11,6 +11,9 @@
 
 from __future__ import annotations
 
+import time
+import sys
+
 import argparse
 import logging
 from pathlib import Path
