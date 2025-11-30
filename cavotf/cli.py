@@ -42,9 +42,9 @@ def _print_banner() -> None:
 ╚══════════════════════════════════════════════════════════╝
 """
         for line in banner.splitlines():
-        print(line)
-        sys.stdout.flush()
-        time.sleep(0.05)   # adjust speed (seconds per line)
+            print(line)
+            sys.stdout.flush()
+            time.sleep(0.05)   # adjust speed (seconds per line)
 
 
 
