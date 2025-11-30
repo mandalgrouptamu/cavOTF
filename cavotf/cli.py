@@ -29,8 +29,7 @@ LOG_LEVELS = {
 
 
 def _print_banner() -> None:
-    print(
-        r"""
+        banner = r"""
 ╔════════════════════════════════════════════════ ═════════╗
 ║  ██████╗ █████╗ ██╗   ██╗ ██████╗ ████████╗███████╗      ║
 ║ ██╔════╝██╔══██╗██║   ██║██╔═══██╗╚══██╔══╝██╔════╝      ║
@@ -42,7 +41,10 @@ def _print_banner() -> None:
 ║        Mandal Group, Texas A&M University • 2025         ║
 ╚══════════════════════════════════════════════════════════╝
 """
-    )
+        for line in banner.splitlines():
+        print(line)
+        sys.stdout.flush()
+        time.sleep(0.05)   # adjust speed (seconds per line)
 
 
 
