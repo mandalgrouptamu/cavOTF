@@ -1,7 +1,7 @@
 # cavOTF
 **Sachith Wickramasinghe, Amir H. Amini**
 
-See the original repository at https://github.com/msachithpw/cavityDFTB 
+
 
 <p align="center">
   <img src="/logo.png" alt="CavityOTF" width="300"/>
