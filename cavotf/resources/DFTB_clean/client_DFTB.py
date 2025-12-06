@@ -44,10 +44,11 @@ def comm(msg, host, port):
     return reply.decode().strip()
 
 
-def apply_config_overrides(params, cfg):
+def apply_config_overrides(params, cfg, idx: str):
+    beta = cfg.physics.beta_run0 if idx == "0" else cfg.physics.beta
     overrides = {
         "nk": cfg.physics.nk,
-        "β": cfg.physics.beta,
+        "β": beta,
         "λ": cfg.physics.lambda_,
         "ωc": cfg.physics.omega_c,
         "ηb": cfg.physics.eta_b,
@@ -123,7 +124,7 @@ def main():
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
-            apply_config_overrides(params, cfg)
+            apply_config_overrides(params, cfg, idx)
             derivative_interval = cfg.physics.dipole_derivative_interval
             calculate_dipole_derivatives = cfg.physics.calculate_dipole_derivatives
             output_cfg = cfg.outputs

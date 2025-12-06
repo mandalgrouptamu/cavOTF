@@ -18,6 +18,8 @@ thermostat_reassign_particles = 16
 # Number of trajectories/clients
 nk = 25
 beta = 1052.8
+# Optional: override beta for run-0 only
+beta_run0 = 1052.8
 lambda = 0.001
 omega_c = 0.190/27.2114
 eta_b = 0.0003
