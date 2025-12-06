@@ -71,7 +71,7 @@ class PhysicsConfig:
 
     nk: int
     beta: float
-    beta_run0: float 
+    beta_run0: float
     lambda_: float
     omega_c: float
     eta_b: float

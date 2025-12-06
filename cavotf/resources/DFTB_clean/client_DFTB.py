@@ -2,10 +2,11 @@
 #  Project:     cavOTF.py
 #  File:        client_DFTB.py
 #  Author:      Sachith Wickramasinghe
-#  Last update: 11/29/2025
+#  Last update: 05/12/2025
 #
 #  Description:
-#  This is the main client file to perform DFTB based MD simulations with cavOTF.py.
+#  This is the main client file to perform DFTB based MD simulations with cavOTF.py
+#  Update: It now applies thermostat only for run-0 if enabled in the input.
 # =============================================================================
 
 from __future__ import annotations
@@ -121,6 +122,7 @@ def main():
 
     derivative_interval = 5
     calculate_dipole_derivatives = True
+    thermostat_cfg = None
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
@@ -128,6 +130,15 @@ def main():
             derivative_interval = cfg.physics.dipole_derivative_interval
             calculate_dipole_derivatives = cfg.physics.calculate_dipole_derivatives
             output_cfg = cfg.outputs
+            if (
+                idx == "0"
+                and cfg.general.use_thermostat
+                and cfg.general.thermostat_type.lower() == "andersen"
+            ):
+                thermostat_cfg = SimpleNamespace(
+                    steps=cfg.general.thermostat_steps,
+                    reassign_particles=cfg.general.thermostat_reassign_particles,
+                )
             _write_input_summary(cfg, params, atm, workdir / "input.cav")
         except Exception as exc:  # noqa: BLE001
             print(f"Warning: failed to apply config overrides: {exc}")
@@ -237,6 +248,7 @@ def main():
         derivative_interval,
         calculate_dipole_derivatives,
         derivative_displacement,
+        thermostat_cfg,
         i,
     ):
         pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2  # noqa: F405
@@ -257,6 +269,18 @@ def main():
         pj[:natoms] += fjt * dt2
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         pk += fxt * dt2
+
+        if thermostat_cfg and i < thermostat_cfg.steps:
+            reassigned = min(thermostat_cfg.reassign_particles, natoms)
+            pj[:natoms], pj[natoms:2 * natoms], pj[2 * natoms:3 * natoms] = andersen_thermostat(
+                pj[:natoms],
+                pj[natoms:2 * natoms],
+                pj[2 * natoms:3 * natoms],
+                mass,
+                params.β,
+                dt,
+                reassigned,
+            )
 
         if output_cfg.write_output_client and i % 2 == 0:
             if f:
@@ -327,6 +351,7 @@ def main():
             derivative_interval,
             calculate_dipole_derivatives,
             derivative_displacement,
+            thermostat_cfg,
             i,
         )
         dat["step"] = i + 1
