@@ -71,6 +71,7 @@ class PhysicsConfig:
 
     nk: int
     beta: float
+    beta_run0: float 
     lambda_: float
     omega_c: float
     eta_b: float
@@ -306,6 +307,8 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
 
     nk = int(_require(section, "nk"))
     beta = _parse_float(_require(section, "beta"))
+    beta_run0_raw = section.get("beta_run0")
+    beta_run0 = _parse_float(beta_run0_raw) if beta_run0_raw is not None else beta
     lambda_ = _parse_float(_require(section, "lambda"))
     omega_c = _parse_float(_require(section, "omega_c"))
     eta_b = _parse_float(_require(section, "eta_b"))
@@ -320,6 +323,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     return PhysicsConfig(
         nk=nk,
         beta=beta,
+        beta_run0=beta_run0,
         lambda_=lambda_,
         omega_c=omega_c,
         eta_b=eta_b,
