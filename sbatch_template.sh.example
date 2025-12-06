@@ -5,6 +5,8 @@
 #SBATCH --ntasks={{ntasks}}
 #SBATCH --cpus-per-task={{cpus}}
 #SBATCH --mem={{memory}}
+#SBATCH --partition={{partition}}
+{{account_line}}
 #SBATCH --output=out.%j
 
 export DFTB_PREFIX={{dftb_prefix}}
