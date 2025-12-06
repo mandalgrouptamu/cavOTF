@@ -7,7 +7,7 @@ init_vel_file = thermaliz_water_vel__InTheBox.dat
 trajectory_prefix = trajectory_
 # Optional: override the built-in clean template bundle
 # clean_template_dir = /path/to/custom/DFTB_clean
-# Thermostat controls
+# Thermostat controls (applied only to run-0 when enabled)
 use_thermostat = yes
 thermostat_type = andersen
 thermostat_steps = 250
