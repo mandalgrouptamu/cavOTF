@@ -87,8 +87,8 @@ dt = params.dt
 dt2 = dt/2
 thermal_steps = params.thermal_steps
 
-os.system('export DFTB_PREFIX=/scratch/user/u.aa271894/VSC/mio-1-1')
-os.environ['DFTB_PREFIX'] = '/scratch/user/u.aa271894/VSC/mio-1-1'
+os.system('export DFTB_PREFIX=/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/')
+os.environ['DFTB_PREFIX'] = '/scratch/user/u.sw216206/dftb_sk_files/mio-1-1/'
 
 
 atm = 'O33H66' # Define the atomic structure
@@ -252,7 +252,7 @@ def calculation(rj, pj, xk, pk, fj, μj, dµ, f, params,i):
     coordinates = atoms.get_positions(wrap=False) * bhr
     rj = np.concatenate((coordinates[:,0], coordinates[:,1], coordinates[:,2]))
 
-    if i % 5 == 0:
+    if i % 2 == 0:
         rxj = rj[:natoms]
         ryj = rj[natoms:2*natoms]
         rzj = rj[2*natoms:3*natoms]
