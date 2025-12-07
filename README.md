@@ -16,13 +16,19 @@ Before installing **cavOTF**, ensure that you have a clean DFTB+ installation in
 
 The package uses the **setuptools** build system and includes most required Python modules and resource templates. Ensure you have an up-to-date version of `setuptools` before installation.
 
-To install **cavOTF**, clone the repository and run:
+To install **cavOTF**, you can simply run:
+
+```bash
+pip install cavotf
+```
+to get the most stable version.
+
+You can also clone the repository and run:
 
 ```bash
 pip install .
 ```
-
-Alternatively, you can install directly from the repository:
+or directly
 
 ```bash
 pip install git+https://github.com/mandalgrouptamu/cavOTF.git
