@@ -270,14 +270,14 @@ def main():
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         pk += fxt * dt2
 
-        if thermostat_cfg and i < thermostat_cfg.steps:
+        if thermostat_cfg and i == thermostat_cfg.steps:
             reassigned = min(thermostat_cfg.reassign_particles, natoms)
             pj[:natoms], pj[natoms:2 * natoms], pj[2 * natoms:3 * natoms] = andersen_thermostat(
                 pj[:natoms],
                 pj[natoms:2 * natoms],
                 pj[2 * natoms:3 * natoms],
                 mass,
-                params.β,
+                (params.β * thermostat_cfg.BetaScale),
                 dt,
                 reassigned,
             )
