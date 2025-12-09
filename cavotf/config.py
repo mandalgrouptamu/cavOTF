@@ -61,6 +61,7 @@ class GeneralConfig:
     use_thermostat: bool = True
     thermostat_type: str = "andersen"
     thermostat_steps: int = 250
+    thermostat_BetaScale: float = 0.75
     collision_frequency: float = 0.001
     thermostat_reassign_particles: int = 16
 
@@ -78,6 +79,7 @@ class PhysicsConfig:
     use_thermostat: bool = True
     thermostat_type: str = "andersen"
     thermostat_steps: int = 250
+    thermostat_BetaScale: float = 0.75
     thermostat_reassign_particles: int = 16
     calculate_dipole_derivatives: bool = True
     dipole_derivative_interval: int = 10
@@ -283,6 +285,7 @@ def _load_general(config: configparser.ConfigParser, base: Path) -> GeneralConfi
     use_thermostat = _parse_bool(section.get("use_thermostat", "true"))
     thermostat_type = section.get("thermostat_type", "andersen")
     thermostat_steps = int(section.get("thermostat_steps", 250))
+    thermostat_BetaScale = _parse_float(section.get("thermostat_BetaScale", "0.75"))
     collision_frequency = _parse_float(section.get("collision_frequency", "0.001"))
     thermostat_reassign_particles = int(section.get("thermostat_reassign_particles", 16))
 
@@ -295,6 +298,7 @@ def _load_general(config: configparser.ConfigParser, base: Path) -> GeneralConfi
         use_thermostat=use_thermostat,
         thermostat_type=thermostat_type,
         thermostat_steps=thermostat_steps,
+        thermostat_BetaScale=thermostat_BetaScale,
         collision_frequency=collision_frequency,
         thermostat_reassign_particles=thermostat_reassign_particles,
     )
@@ -315,6 +319,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     use_thermostat = _parse_bool(section.get("use_thermostat", "true"))
     thermostat_type = section.get("thermostat_type", "andersen")
     thermostat_steps = int(section.get("thermostat_steps", 250))
+    thermostat_BetaScale = _parse_float(section.get("thermostat_BetaScale", "0.75"))
     thermostat_reassign_particles = int(section.get("thermostat_reassign_particles", 16))
     calculate_dipole_derivatives = _parse_bool(section.get("calculate_dipole_derivatives", "true"))
     dipole_derivative_interval = int(section.get("dipole_derivative_interval", 10))
@@ -330,6 +335,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
         use_thermostat=use_thermostat,
         thermostat_type=thermostat_type,
         thermostat_steps=thermostat_steps,
+        thermostat_BetaScale=thermostat_BetaScale,
         thermostat_reassign_particles=thermostat_reassign_particles,
         calculate_dipole_derivatives=calculate_dipole_derivatives,
         dipole_derivative_interval=dipole_derivative_interval,
