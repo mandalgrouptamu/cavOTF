@@ -277,7 +277,7 @@ def main():
                 pj[natoms:2 * natoms],
                 pj[2 * natoms:3 * natoms],
                 mass,
-                params.β,
+                (params.β * thermostat_cfg.BetaScale),
                 dt,
                 reassigned,
             )
