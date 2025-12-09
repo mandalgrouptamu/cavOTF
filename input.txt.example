@@ -27,6 +27,7 @@ eta_b = 0.0003
 use_thermostat = true
 thermostat_type = andersen
 thermostat_steps = 250
+thermostat_BetaScale = 0.75
 thermostat_reassign_particles = 16
 calculate_dipole_derivatives = true
 # Write dipole derivatives every N steps
