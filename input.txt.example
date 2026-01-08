@@ -11,6 +11,7 @@ trajectory_prefix = trajectory_
 use_thermostat = yes
 thermostat_type = andersen
 thermostat_steps = 250
+thermostat_BetaScale = 0.75
 collision_frequency = 0.001
 thermostat_reassign_particles = 16
 
