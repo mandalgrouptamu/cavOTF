@@ -11,10 +11,11 @@
 import numpy as np
 from numpy.random import normal as gran
 
-def dpk(x, µ, par):
+def dpk(x, µ, par, t=0):
     ηb = par.ηb
     ωc = par.ωc
-    return  - ηb * µ
+    
+    return  - ηb * µ - par.gl*np.sin(par.ωl * t )
 
 def dpkT(x, µ, par):
     ηb = par.ηb
@@ -78,7 +79,7 @@ class param:
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
 
-        totaltime    = 3000   # total simulation time in fs
+        totaltime    = 6000   # total simulation time in fs
         thermal_time = 50000   # thermalization time in fs
         dt           = 0.3    #time step in fs
 
@@ -89,8 +90,16 @@ class param:
         Lx = 200000 * 4
         self.nk = 81
         self.dL = Lx/self.nk
- 
-
+        self.ωl = 0.190/27.2114
+        
+        gl_val = 0.005/27.2114
+        gl = np.zeros(self.nk)
+        n_active = min(5, self.nk)
+        gl[:n_active] = gl_val
+        self.gl = gl
+        
+        
+        
         ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (Lx)
         self.ωk = np.sqrt(self.ω0**2 + (self.c * ky)**2)
         self.ωk[self.ωk> 5 * self.ω0] = 5 * self.ω0
