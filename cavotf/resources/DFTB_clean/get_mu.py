@@ -2,7 +2,7 @@
 #  Project:     cavOTF.py
 #  File:        dftb.py
 #  Author:      Sachith Wickramasinghe
-#  Last update: 11/28/2025
+#  Last update: 02/02/2026
 #
 #  Description:
 #  DFTB+ input generator and dmu calculator.
@@ -45,6 +45,10 @@ def apply_config_overrides(params: param, config_path: pathlib.Path | None) -> N
         "ωc": cfg.physics.omega_c,
         "ηb": cfg.physics.eta_b,
         "thermal_steps": cfg.physics.thermal_steps,
+        "ωl": cfg.physics.omega_l,
+        "gl_val": cfg.physics.gl_val,
+        "gl_n_active": cfg.physics.gl_n_active,
+
     }
     for key, value in overrides.items():
         if hasattr(params, key):
@@ -70,8 +74,9 @@ def main() -> None:
     workdir = pathlib.Path(args.workdir) if args.workdir else pathlib.Path.cwd()
     os.chdir(workdir)
 
-    params = param()
     config_path = pathlib.Path(args.config) if args.config else None
+    cfg = load_config(pathlib.Path(args.config))
+    params = param(cfg.physics)
     apply_config_overrides(params, config_path)
 
     print("Start")

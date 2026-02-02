@@ -84,6 +84,9 @@ class PhysicsConfig:
     calculate_dipole_derivatives: bool = True
     dipole_derivative_interval: int = 10
     thermal_steps: int = 1000
+    omega_l:float = 0.0069823
+    gl_val: float = 0.0
+    gl_n_active: int = 0
 
 
 @dataclasses.dataclass
@@ -324,6 +327,9 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     calculate_dipole_derivatives = _parse_bool(section.get("calculate_dipole_derivatives", "true"))
     dipole_derivative_interval = int(section.get("dipole_derivative_interval", 10))
     thermal_steps = int(section.get("thermal_steps", 1000))
+    omega_l = _parse_float(section.get("omega_l", "0.00698236768")) 
+    gl_val = _parse_float(section.get("gl_val", "0.005")) 
+    gl_n_active = int(section.get("gl_n_active", 5))
 
     return PhysicsConfig(
         nk=nk,
@@ -340,6 +346,10 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
         calculate_dipole_derivatives=calculate_dipole_derivatives,
         dipole_derivative_interval=dipole_derivative_interval,
         thermal_steps=thermal_steps,
+        omega_l = omega_l,
+        gl_val=gl_val,
+        gl_n_active=gl_n_active,
+
     )
 
 
