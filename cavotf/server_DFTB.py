@@ -171,7 +171,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=None, help="Path to cavotf input.txt")
     args = parser.parse_args()
 
-    param_obj = param()
+    param_obj = param(cfg.physics)
     OUTPUT_CONFIG = _default_output_config()
     config_path = Path(args.config) if args.config else None
     if config_path and load_config and _recompute_mode_grid:
@@ -185,6 +185,9 @@ if __name__ == "__main__":
                 "ωc": cfg.physics.omega_c,
                 "ηb": cfg.physics.eta_b,
                 "thermal_steps": cfg.physics.thermal_steps,
+                "ωl": cfg.physics.omega_l,
+                "gl_val": cfg.physics.gl_val,
+                "gl_n_active": cfg.physics.gl_n_active,
             }
             for key, value in overrides.items():
                 if hasattr(param_obj, key):
