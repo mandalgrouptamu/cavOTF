@@ -11,11 +11,11 @@
 import numpy as np
 from numpy.random import normal as gran
 
-def dpk(x, µ, par, t=0):
+def dpk(x, µ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
     
-    return  - ηb * µ - par.gl*np.sin(par.ωl * t )
+    return  - ηb * µ - par.gl[idx]*np.sin(par.ωl * t )
 
 def dpkT(x, µ, par):
     ηb = par.ηb

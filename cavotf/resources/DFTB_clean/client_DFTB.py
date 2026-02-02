@@ -212,6 +212,8 @@ def main():
         f.write(f"gl shape     = {np.shape(params.gl)}\n")
         f.write(f"dpk shape    = {np.shape(dpk(xk, μj, params, t=0*dt))}\n")
         f.write(f"nk           = {params.nk}\n")
+        f.write(f"idx           = {idx}\n")
+        
         f.write("\n")
     
         f.write("First 10 gl values:\n")
