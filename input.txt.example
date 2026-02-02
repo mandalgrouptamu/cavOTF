@@ -35,6 +35,11 @@ calculate_dipole_derivatives = true
 dipole_derivative_interval = 10
 # Number of initial thermalization steps for cavity coordinates
 thermal_steps = 1000
+# laser------------------------
+omega_l = 0.190/27.2114
+gl_val = 0.005          # in eV 
+# number of low boxes to couple
+gl_n_active = 5         
 
 [outputs]
 # Control which artifacts are written during dynamics and server updates

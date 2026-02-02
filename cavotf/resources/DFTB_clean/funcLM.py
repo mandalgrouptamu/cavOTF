@@ -2,7 +2,7 @@
 #  Project:     cavOTF.py
 #  File:        dftb.py
 #  Author:      Sachith Wickramasinghe
-#  Last update: 11/28/2025
+#  Last update: 02/02/2026
 #
 #  Description:
 #  parameters and functions.
@@ -70,11 +70,11 @@ def init(μ, param): # initialize the xk, pk
 
 
 class param:
-    def __init__(self, ωc = 0.190/27.2114):
-        self.ωc = ωc
-        self.ω0 = ωc
-        self.β  = 1052.8 #* (300.0/200.0)
-        self.λ = 0.001
+    def __init__(self, physics):
+        self.ωc = physics.omega_c
+        self.ω0 = self.ωc
+        self.β  = physics.beta #* (300.0/200.0)
+        self.λ = physics.lambda_
         self.natoms = 99 # number of atoms in the MD simulation
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
@@ -88,14 +88,13 @@ class param:
         self.thermal_steps = int(thermal_time // dt)
 
         Lx = 200000 * 4
-        self.nk = 81
+        self.nk = physics.nk
         self.dL = Lx/self.nk
-        self.ωl = 0.190/27.2114
         
-        gl_val = 0.005/27.2114
+        self.ωl = physics.omega_l
+        gl_val_Ha = physics.gl_val / 27.2114
         gl = np.zeros(self.nk)
-        n_active = min(5, self.nk)
-        gl[:n_active] = gl_val
+        gl[:min(physics.gl_n_active, self.nk)] = gl_val_Ha
         self.gl = gl
         
         
@@ -105,6 +104,6 @@ class param:
         self.ωk[self.ωk> 5 * self.ω0] = 5 * self.ω0
         self.m = 1.0
           
-        self.ηb = 0.0002  #0.007 
+        self.ηb = physics.eta_b  #0.007 
 
 
