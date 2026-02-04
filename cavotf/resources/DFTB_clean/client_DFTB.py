@@ -120,7 +120,7 @@ def main():
 
     idx = args.idx
     output_cfg = _default_output_config()
-    #params = param(cfg.physics)
+    #params = param(physics = cfg.physics)
     atm = args.atm_symbols  # Legacy default retained as the CLI default
 
     derivative_interval = 5
@@ -129,7 +129,7 @@ def main():
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
-            params = param(cfg.physics)
+            params = param(physics = cfg.physics)
             # apply_config_overrides(params, cfg, idx)
             derivative_interval = cfg.physics.dipole_derivative_interval
             calculate_dipole_derivatives = cfg.physics.calculate_dipole_derivatives
@@ -210,7 +210,7 @@ def main():
         f.write(f"xk shape     = {np.shape(xk)}\n")
         f.write(f"pk shape     = {np.shape(pk)}\n")
         f.write(f"gl shape     = {np.shape(params.gl)}\n")
-        f.write(f"dpk shape    = {np.shape(dpk(xk, μj, params, t=0*dt))}\n")
+        f.write(f"dpk shape    = {np.shape(dpk(xk, μj, params, idx, t=0*dt))}\n")
         f.write(f"nk           = {params.nk}\n")
         f.write(f"idx           = {idx}\n")
         
