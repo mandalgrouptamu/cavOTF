@@ -230,7 +230,7 @@ def main():
     xk = np.array([xk])
     pk = np.array([pk])
 
-    pk += dpk(xk, μj, params, t=0*dt) * dt2  # noqa: F405
+    pk += dpk(xk, μj, params, idx, t=0*dt) * dt2  # noqa: F405
     pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
     f = None
@@ -252,7 +252,7 @@ def main():
 
     output_format = "{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}"
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
-    fxt = dpk(xk, μj, params, t=0*dt)  # noqa: F405
+    fxt = dpk(xk, μj, params, idx, t=0*dt)  # noqa: F405
     Tk = np.sum(pj**2 / (2 * masses))
     if output_cfg.write_output_client:
         print(output_format.format(0, xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
@@ -291,7 +291,7 @@ def main():
         pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2  # noqa: F405
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         rj += pj * dt / masses
-        pk += dpk(xk, μj, params, t=(i*dt)) * dt2  # noqa: F405
+        pk += dpk(xk, μj, params, idx, t=(i*dt)) * dt2  # noqa: F405
 
         fj, charges = getForcesCharges(rj, natoms, atm, box)
         Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
@@ -301,7 +301,7 @@ def main():
             dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
         fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
-        fxt = dpk(xk, μj, params, t=(i*dt+ dt2))  # noqa: F405
+        fxt = dpk(xk, μj, params, idx, t=(i*dt+ dt2))  # noqa: F405
 
         pj[:natoms] += fjt * dt2
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
