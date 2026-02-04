@@ -3,7 +3,7 @@
 #  File:        server_DFTB.py
 #  Author:      Sachith Wickramasinghe
 #  Modified by: Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
+#  Last update: 02/03/2026
 #
 #  Description:
 #      Shared server script for cavOTF.py dynamics.
@@ -171,12 +171,13 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=None, help="Path to cavotf input.txt")
     args = parser.parse_args()
 
-    param_obj = param(cfg.physics)
+    param_obj = param()
     OUTPUT_CONFIG = _default_output_config()
     config_path = Path(args.config) if args.config else None
     if config_path and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(config_path)
+            param_obj = param(physics = cfg.physics)
             OUTPUT_CONFIG = cfg.outputs
             overrides = {
                 "nk": cfg.physics.nk,

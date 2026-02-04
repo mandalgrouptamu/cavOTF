@@ -10,10 +10,12 @@
 
 import numpy as np
 from numpy.random import normal as gran
+from types import SimpleNamespace
 
 def dpk(x, µ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
+    idx = int(idx)
     
     return  - ηb * µ - par.gl[idx]*np.sin(par.ωl * t )
 
@@ -67,10 +69,23 @@ def init(μ, param): # initialize the xk, pk
 
     return xk + x0, pk 
 
+def default_physics():
+    return SimpleNamespace(
+        omega_c=0.19,    
+        beta=1052.8,
+        lambda_=0.001,
+        nk=81,
+        omega_l=0.0,
+        gl_val=0.0,
+        gl_n_active=0,
+        eta_b=0.0002,
+    )
 
 
 class param:
-    def __init__(self, physics):
+    def __init__(self, physics = None):
+        if physics is None:
+            physics = default_physics()
         self.ωc = physics.omega_c
         self.ω0 = self.ωc
         self.β  = physics.beta #* (300.0/200.0)
