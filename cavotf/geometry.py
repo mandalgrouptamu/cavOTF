@@ -42,13 +42,19 @@ def prepare_run_directories(config: Config, dry_run: bool = False) -> List[Path]
     # Create run directories, each initialized with geometry and velocity files.
     logger = LOGGER.getChild("prepare")
     cases = collect_geometry_cases(config.general.geometry_path)
-    if len(cases) < config.physics.nk:
-        raise ValueError(
-            f"Found {len(cases)} geometry folders but need {config.physics.nk} for nk trajectories"
-        )
+    if len(cases) == 0:
+        raise ValueError(f"No geometry folders found in: {config.general.geometry_path}")
 
-    random.shuffle(cases)
-    selected = cases[: config.physics.nk]
+    if len(cases) < config.physics.nk:
+        logger.warning(
+            f"\033[91mFound {len(cases)} geometry folders but need "
+            f"{config.physics.nk} for nk trajectories\033[0m"
+        )
+        random.shuffle(cases)
+        selected = (cases * ((config.physics.nk + len(cases) - 1) // len(cases)))[:config.physics.nk]
+    else:
+        random.shuffle(cases)
+        selected = cases[: config.physics.nk]
     logger.info("Preparing %s run directories from %s geometries", config.physics.nk, len(cases))
 
     run_dirs: List[Path] = []
