@@ -2,7 +2,7 @@
 #  Project:     cavOTF.py
 #  File:        dftb.py
 #  Author:      Sachith Wickramasinghe
-#  Last update: 11/28/2025
+#  Last update: 02/02/2026
 #
 #  Description:
 #  parameters and functions.
@@ -10,11 +10,14 @@
 
 import numpy as np
 from numpy.random import normal as gran
+from types import SimpleNamespace
 
-def dpk(x, µ, par):
+def dpk(x, µ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
-    return  - ηb * µ
+    idx = int(idx)
+    
+    return  - ηb * µ - par.gl[idx]*np.sin(par.ωl * t )
 
 def dpkT(x, µ, par):
     ηb = par.ηb
@@ -66,19 +69,32 @@ def init(μ, param): # initialize the xk, pk
 
     return xk + x0, pk 
 
+def default_physics():
+    return SimpleNamespace(
+        omega_c=0.19,    
+        beta=1052.8,
+        lambda_=0.001,
+        nk=81,
+        omega_l=0.0,
+        gl_val=0.0,
+        gl_n_active=0,
+        eta_b=0.0002,
+    )
 
 
 class param:
-    def __init__(self, ωc = 0.190/27.2114):
-        self.ωc = ωc
-        self.ω0 = ωc
-        self.β  = 1052.8 #* (300.0/200.0)
-        self.λ = 0.001
+    def __init__(self, physics = None):
+        if physics is None:
+            physics = default_physics()
+        self.ωc = physics.omega_c
+        self.ω0 = self.ωc
+        self.β  = physics.beta #* (300.0/200.0)
+        self.λ = physics.lambda_
         self.natoms = 99 # number of atoms in the MD simulation
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
 
-        totaltime    = 3000   # total simulation time in fs
+        totaltime    = 6000   # total simulation time in fs
         thermal_time = 50000   # thermalization time in fs
         dt           = 0.3    #time step in fs
 
@@ -87,15 +103,22 @@ class param:
         self.thermal_steps = int(thermal_time // dt)
 
         Lx = 200000 * 4
-        self.nk = 81
+        self.nk = physics.nk
         self.dL = Lx/self.nk
- 
-
+        
+        self.ωl = physics.omega_l
+        gl_val_Ha = physics.gl_val / 27.2114
+        gl = np.zeros(self.nk)
+        gl[:min(physics.gl_n_active, self.nk)] = gl_val_Ha
+        self.gl = gl
+        
+        
+        
         ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (Lx)
         self.ωk = np.sqrt(self.ω0**2 + (self.c * ky)**2)
         self.ωk[self.ωk> 5 * self.ω0] = 5 * self.ω0
         self.m = 1.0
           
-        self.ηb = 0.0002  #0.007 
+        self.ηb = physics.eta_b  #0.007 
 
 

@@ -54,6 +54,9 @@ def apply_config_overrides(params, cfg, idx: str):
         "ωc": cfg.physics.omega_c,
         "ηb": cfg.physics.eta_b,
         "thermal_steps": cfg.physics.thermal_steps,
+        "ωl": cfg.physics.omega_l,
+        "gl_val": cfg.physics.gl_val,
+        "gl_n_active": cfg.physics.gl_n_active,
     }
     for key, value in overrides.items():
         if hasattr(params, key):
@@ -117,7 +120,7 @@ def main():
 
     idx = args.idx
     output_cfg = _default_output_config()
-    params = param()
+    #params = param(physics = cfg.physics)
     atm = args.atm_symbols  # Legacy default retained as the CLI default
 
     derivative_interval = 5
@@ -126,7 +129,8 @@ def main():
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
-            apply_config_overrides(params, cfg, idx)
+            params = param(physics = cfg.physics)
+            # apply_config_overrides(params, cfg, idx)
             derivative_interval = cfg.physics.dipole_derivative_interval
             calculate_dipole_derivatives = cfg.physics.calculate_dipole_derivatives
             output_cfg = cfg.outputs
@@ -185,6 +189,37 @@ def main():
 
     xk, pk = init(μj, params)  # noqa: F405
     x_save = np.zeros((int(thermal_steps * 0.1)))
+    
+    with open("cavity_params.dat", "w") as f:
+        f.write("=== Cavity parameters (sanity check) ===\n")
+        f.write(f"nk              = {params.nk}\n")
+        f.write(f"omega_c (Ha)    = {params.ωc:.8f}\n")
+        f.write(f"omega_l (Ha)    = {params.ωl:.8f}\n")
+        f.write(f"beta            = {params.β}\n")
+        f.write(f"lambda          = {params.λ}\n")
+        f.write(f"eta_b           = {params.ηb}\n")
+        f.write(f"thermal_steps   = {params.thermal_steps}\n")
+        f.write("\n")
+    
+        f.write("Light–matter coupling:\n")
+        f.write(f"  gl_n_active   = {np.count_nonzero(params.gl)}\n")
+        f.write(f"  gl_max (Ha)   = {params.gl.max():.6e}\n")
+        f.write(f"  gl_max (eV)   = {params.gl.max() * 27.2114:.6e}\n")
+        
+        f.write("\n=== DEBUG BEFORE pk UPDATE ===\n")
+        f.write(f"xk shape     = {np.shape(xk)}\n")
+        f.write(f"pk shape     = {np.shape(pk)}\n")
+        f.write(f"gl shape     = {np.shape(params.gl)}\n")
+        f.write(f"dpk shape    = {np.shape(dpk(xk, μj, params, idx, t=0*dt))}\n")
+        f.write(f"nk           = {params.nk}\n")
+        f.write(f"idx           = {idx}\n")
+        
+        f.write("\n")
+    
+        f.write("First 10 gl values:\n")
+        for i, g in enumerate(params.gl[:10]):
+            f.write(f"  k={i:3d}  gl={g:.6e} Ha\n")
+
 
     if output_cfg.write_histogram:
         data = np.histogram(x_save, bins=100)
@@ -195,7 +230,7 @@ def main():
     xk = np.array([xk])
     pk = np.array([pk])
 
-    pk += dpk(xk, μj, params) * dt2  # noqa: F405
+    pk += dpk(xk, μj, params, idx, t=0*dt) * dt2  # noqa: F405
     pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
     f = None
@@ -217,10 +252,11 @@ def main():
 
     output_format = "{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}"
     fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
-    fxt = dpk(xk, μj, params)  # noqa: F405
+    fxt = dpk(xk, μj, params, idx, t=0*dt)  # noqa: F405
     Tk = np.sum(pj**2 / (2 * masses))
     if output_cfg.write_output_client:
         print(output_format.format(0, xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
+        
 
     def andersen_thermostat(Px, Py, Pz, mass, β, timestep, N_atoms):
         N = len(Px)
@@ -255,7 +291,7 @@ def main():
         pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2  # noqa: F405
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         rj += pj * dt / masses
-        pk += dpk(xk, μj, params) * dt2  # noqa: F405
+        pk += dpk(xk, μj, params, idx, t=(i*dt)) * dt2  # noqa: F405
 
         fj, charges = getForcesCharges(rj, natoms, atm, box)
         Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
@@ -265,7 +301,7 @@ def main():
             dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
         fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
-        fxt = dpk(xk, μj, params)  # noqa: F405
+        fxt = dpk(xk, μj, params, idx, t=(i*dt+ dt2))  # noqa: F405
 
         pj[:natoms] += fjt * dt2
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2

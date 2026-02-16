@@ -29,7 +29,7 @@ def load_param(clean_template_dir: Path, config: Config):
     # Load parameters
     sys.path.insert(0, str(clean_template_dir))
     funcLM = importlib.import_module("funcLM")
-    param_obj = funcLM.param()
+    param_obj = funcLM.param(config.physics)
     overrides = {
         "nk": config.physics.nk,
         "β": config.physics.beta,
@@ -37,6 +37,9 @@ def load_param(clean_template_dir: Path, config: Config):
         "ωc": config.physics.omega_c,
         "ηb": config.physics.eta_b,
         "thermal_steps": config.physics.thermal_steps,
+        "ωl": config.physics.omega_l,
+        "gl_val": config.physics.gl_val,
+        "gl_n_active": config.physics.gl_n_active,
     }
     for key, value in overrides.items():
         if hasattr(param_obj, key):

@@ -3,7 +3,7 @@
 #  File:        server_DFTB.py
 #  Author:      Sachith Wickramasinghe
 #  Modified by: Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
+#  Last update: 02/03/2026
 #
 #  Description:
 #      Shared server script for cavOTF.py dynamics.
@@ -177,6 +177,7 @@ if __name__ == "__main__":
     if config_path and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(config_path)
+            param_obj = param(physics = cfg.physics)
             OUTPUT_CONFIG = cfg.outputs
             overrides = {
                 "nk": cfg.physics.nk,
@@ -185,6 +186,9 @@ if __name__ == "__main__":
                 "ωc": cfg.physics.omega_c,
                 "ηb": cfg.physics.eta_b,
                 "thermal_steps": cfg.physics.thermal_steps,
+                "ωl": cfg.physics.omega_l,
+                "gl_val": cfg.physics.gl_val,
+                "gl_n_active": cfg.physics.gl_n_active,
             }
             for key, value in overrides.items():
                 if hasattr(param_obj, key):
