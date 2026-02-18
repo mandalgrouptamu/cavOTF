@@ -17,8 +17,10 @@ import os
 import pathlib
 import socket
 import sys
-import time
+import time, glob
 from types import SimpleNamespace
+import subprocess
+
 
 import numpy as np
 from ase import Atoms
@@ -114,6 +116,20 @@ def main():
     os.chdir(workdir)
 
     base_dir = pathlib.Path(args.base) if args.base else workdir.parent
+    
+    file_path = pathlib.Path(base_dir / "server_hostname.txt")
+    
+    file_to_check = str(file_path) 
+    print(f"Waiting for {file_to_check} to appear...")
+    # Loop indefinitely until the break condition is met
+    while True:
+        result = subprocess.run(["ls", "-l"], capture_output=True, text=True)
+        if len(glob.glob(file_to_check)) != 0:
+            print(f"Found {file_to_check}. Moving on to the next step.")
+            break
+        time.sleep(5) # Wait before the next check
+        
+
     with open(base_dir / "server_hostname.txt", "r") as fob:
         host = fob.readline().strip()
         port = int(fob.readline().strip())
