@@ -189,6 +189,9 @@ if __name__ == "__main__":
                 "ωl": cfg.physics.omega_l,
                 "gl_val": cfg.physics.gl_val,
                 "gl_n_active": cfg.physics.gl_n_active,
+                "ωlm": cfg.physics.omega_lm,
+                "gl_valm": cfg.physics.gl_valm,
+                "gl_n_activem": cfg.physics.gl_n_activem,
             }
             for key, value in overrides.items():
                 if hasattr(param_obj, key):
