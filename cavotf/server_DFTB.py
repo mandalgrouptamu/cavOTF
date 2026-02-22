@@ -119,6 +119,11 @@ def resultsfile(msg):
             f.write(f"{msg}\n")
 
 
+def timingfile(msg):
+    with open("time.dat", "a") as f:
+        f.write(f"{msg}\n")
+
+
 class Handler(socketserver.BaseRequestHandler):
     def handle(self):
         with lock:
@@ -139,9 +144,17 @@ class Handler(socketserver.BaseRequestHandler):
                 resultsfile(f"{srv.step + 1} {' '.join(srv.qs.astype(str))}")
 
                 srv.step += 1
+                now = time.time()
+                if (srv.step + 1) % 100 == 0:
+                    total_elapsed = now - srv.start_time
+                    timingfile(
+                        f"server step {srv.step + 1}: total_elapsed_s={total_elapsed:.6f} "
+                        f"interval_elapsed_s={now - srv.last_interval_mark:.6f}"
+                    )
+                    srv.last_interval_mark = now
                 if srv.loglevel >= 1:
-                    logfile(f"Step {srv.step} | {time.time() - srv.t0:.2f} s")
-                    srv.t0 = time.time()
+                    logfile(f"Step {srv.step} | {now - srv.t0:.2f} s")
+                    srv.t0 = now
                     logfile("---------------------")
                 srv.update = [True for _ in range(srv.N)]
 
@@ -159,6 +172,8 @@ class Handler(socketserver.BaseRequestHandler):
                 srv.killed[data["idx"]] = True
 
             if all(srv.killed):
+                total_elapsed = time.time() - srv.start_time
+                timingfile(f"server total_time_s={total_elapsed:.6f}")
                 if srv.loglevel >= 1:
                     logfile("All clients killed. Exiting server.")
                 self.request.close()
@@ -224,6 +239,11 @@ if __name__ == "__main__":
     srv.loglevel = 2
     srv.killed = [False for _ in range(srv.N)]
     srv.t0 = time.time()
+    srv.start_time = srv.t0
+    srv.last_interval_mark = srv.t0
+
+    with open("time.dat", "w") as f:
+        f.write("# Server timing information\n")
 
     srv.serve_forever()
     srv.server_close()

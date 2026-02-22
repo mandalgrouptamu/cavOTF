@@ -107,6 +107,11 @@ def _default_output_config():
     )
 
 
+def timingfile(path: pathlib.Path, msg: str) -> None:
+    with open(path, "a") as f:
+        f.write(f"{msg}\n")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("idx", type=str, nargs="?", default="0")
@@ -169,6 +174,11 @@ def main():
             print(f"Warning: failed to apply config overrides: {exc}")
 
     time.sleep(30)
+
+    timing_path = base_dir / "time.dat"
+    timing_start = time.time()
+    timing_mark = timing_start
+    timingfile(timing_path, f"client {idx} started")
 
     t0 = time.time()
     bhr = 1.8897259886
@@ -419,11 +429,23 @@ def main():
         reply = json.loads(comm(dat, host, port))
         globalStep = reply["step"]
 
+        completed_step = i + 1
+        if completed_step % 100 == 0:
+            now = time.time()
+            timingfile(
+                timing_path,
+                f"client {idx} step {completed_step}: total_elapsed_s={now - timing_start:.6f} "
+                f"interval_elapsed_s={now - timing_mark:.6f}",
+            )
+            timing_mark = now
+
     dat["killed"] = True
     dat["step"] = steps
     dat["q"] = xk[0]
     dat["p"] = pk[0]
     comm(dat, host, port)
+
+    timingfile(timing_path, f"client {idx} total_time_s={time.time() - timing_start:.6f}")
 
     if output_cfg.write_output_client and f:
         f.close()
