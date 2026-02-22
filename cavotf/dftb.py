@@ -40,8 +40,17 @@ def prepare_get_mu(config: Config, run_dirs: List[Path], dry_run: bool = False) 
     script = config.general.clean_template_dir / "get_mu.py"
     config_arg = f"--config {config.path}"
     commands = [f"python {script} --workdir {run_dir} {config_arg}" for run_dir in run_dirs]
-    prefixed = build_multiprog_commands(commands)
-    return write_conf(prefixed, base / "get_mu.conf", dry_run=dry_run)
+    if len(commands) > 200:
+        nc = len(commands)
+        nfiles = nc//200 + 1
+        conf_list = []
+        for n in range(nfiles):
+            prefixed = build_multiprog_commands(commands[n*200:(n+1)*200])
+            conf_list.append(write_conf(prefixed, base / f"get_mu{n}.conf", dry_run=dry_run))
+        return conf_list
+    else:
+        prefixed = build_multiprog_commands(commands)
+        return write_conf(prefixed, base / "get_mu.conf", dry_run=dry_run)
 
 
 def prepare_run(config: Config, run_dirs: List[Path], dry_run: bool = False) -> Path:
@@ -54,6 +63,15 @@ def prepare_run(config: Config, run_dirs: List[Path], dry_run: bool = False) -> 
     commands.extend(
         f"python {client_script} {idx} --workdir {run_dir} --base {base} {config_arg}" for idx, run_dir in enumerate(run_dirs)
     )
-    prefixed = build_multiprog_commands(commands)
-    return write_conf(prefixed, base / "run.conf", dry_run=dry_run)
+    if len(commands) > 200:
+        nc = len(commands)
+        nfiles = nc//200 + 1
+        conf_list = []
+        for n in range(nfiles):
+            prefixed = build_multiprog_commands(commands[n*200:(n+1)*200])
+            conf_list.append(write_conf(prefixed, base / f"run_{n}.conf", dry_run=dry_run))
+        return conf_list
+    else:
+        prefixed = build_multiprog_commands(commands)
+        return write_conf(prefixed, base / "run.conf", dry_run=dry_run)
 

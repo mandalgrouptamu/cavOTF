@@ -26,11 +26,12 @@ def dpkT(x, µ, par):
 
 
 
-def dpj(x, fj, dµ, μ, par):
+def dpj(x, fj, dµ, μ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
+    idx = int(idx)
 
-    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) 
+    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) - (dµ * par.glm[idx]*np.sin(par.ωlm * t))
 
 def vvl(x, p, µ, param, f1): #only for 1 cavity
     ndof = 1
@@ -78,6 +79,9 @@ def default_physics():
         omega_l=0.0,
         gl_val=0.0,
         gl_n_active=0,
+        omega_lm=0.0,
+        gl_valm=0.0,
+        gl_n_activem=0,
         eta_b=0.0002,
     )
 
@@ -112,6 +116,11 @@ class param:
         gl[:min(physics.gl_n_active, self.nk)] = gl_val_Ha
         self.gl = gl
         
+        self.ωlm = physics.omega_lm
+        gl_val_Ham = physics.gl_valm / 27.2114
+        glm = np.zeros(self.nk)
+        gl[:min(physics.gl_n_activem, self.nk)] = gl_val_Ham
+        self.glm = glm
         
         
         ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (Lx)
