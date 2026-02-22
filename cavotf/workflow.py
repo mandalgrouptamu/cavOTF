@@ -50,9 +50,19 @@ def run_workflow(config: Config) -> None:
 
     get_mu_conf = prepare_get_mu(config, run_dirs, dry_run=False)
     if config.hpc.run_get_mu:
-        script_text = render_sbatch(config, get_mu_conf, job_name="getMU", ntasks=len(run_dirs))
-        script_path = write_sbatch(script_text, config.path.parent / "get_mu.sh")
-        submit_job(script_path, dry_run=False)
+        if isinstance(get_mu_conf, list):
+            for i in range(len(get_mu_conf)):
+                min_ntask = len(run_dirs) - (len(run_dirs)//200)*200 
+                ntask = 200 if (i !=(len(get_mu_conf)-1)) else min_ntask
+        
+                script_text = render_sbatch(config, get_mu_conf[i], job_name="getMU", ntasks=ntask)
+                script_path = write_sbatch(script_text, config.path.parent / f"get_mu_{i}.sh")
+                submit_job(script_path, dry_run=False)
+    
+        else:
+            script_text = render_sbatch(config, get_mu_conf, job_name="getMU", ntasks=len(run_dirs))
+            script_path = write_sbatch(script_text, config.path.parent / "get_mu.sh")
+            submit_job(script_path, dry_run=False)
         _wait_for_dipoles(run_dirs)
 
     # Initialize cavity coordinates using dmu.dat produced by get_mu.
@@ -60,9 +70,18 @@ def run_workflow(config: Config) -> None:
 
     run_conf = prepare_run(config, run_dirs, dry_run=False)
     if config.hpc.run_dynamics:
-        script_text = render_sbatch(config, run_conf, job_name="Run", ntasks=len(run_dirs) + 1)
-        script_path = write_sbatch(script_text, config.path.parent / "run.sh")
-        submit_job(script_path, dry_run=False)
+        if isinstance(run_conf, list):
+            for i in range(len(run_conf)):
+                min_ntask = len(run_dirs) - (len(run_dirs)//200)*200 + 1
+                ntask = 200 if (i !=(len(run_conf)-1)) else min_ntask
+                script_text = render_sbatch(config, run_conf[i], job_name="Run", ntasks=ntask)
+                script_path = write_sbatch(script_text, config.path.parent / f"run_{i}.sh")
+                submit_job(script_path, dry_run=False)
+    
+        else:
+            script_text = render_sbatch(config, run_conf, job_name="Run", ntasks=len(run_dirs) + 1)
+            script_path = write_sbatch(script_text, config.path.parent / "run.sh")
+            submit_job(script_path, dry_run=False)
 
 
 def _wait_for_dipoles(run_dirs: list[Path], poll_interval: int = 30, timeout: Optional[int] = None) -> None:

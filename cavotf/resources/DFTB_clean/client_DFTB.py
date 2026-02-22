@@ -59,6 +59,10 @@ def apply_config_overrides(params, cfg, idx: str):
         "ωl": cfg.physics.omega_l,
         "gl_val": cfg.physics.gl_val,
         "gl_n_active": cfg.physics.gl_n_active,
+        "ωlm": cfg.physics.omega_lm,
+        "gl_valm": cfg.physics.gl_valm,
+        "gl_n_activem": cfg.physics.gl_n_activem,
+        
     }
     for key, value in overrides.items():
         if hasattr(params, key):
@@ -211,6 +215,7 @@ def main():
         f.write(f"nk              = {params.nk}\n")
         f.write(f"omega_c (Ha)    = {params.ωc:.8f}\n")
         f.write(f"omega_l (Ha)    = {params.ωl:.8f}\n")
+        f.write(f"omega_lm (Ha)   = {params.ωlm:.8f}\n")
         f.write(f"beta            = {params.β}\n")
         f.write(f"lambda          = {params.λ}\n")
         f.write(f"eta_b           = {params.ηb}\n")
@@ -221,6 +226,7 @@ def main():
         f.write(f"  gl_n_active   = {np.count_nonzero(params.gl)}\n")
         f.write(f"  gl_max (Ha)   = {params.gl.max():.6e}\n")
         f.write(f"  gl_max (eV)   = {params.gl.max() * 27.2114:.6e}\n")
+        f.write(f"  gl_n_activem   = {np.count_nonzero(params.glm)}\n")
         
         f.write("\n=== DEBUG BEFORE pk UPDATE ===\n")
         f.write(f"xk shape     = {np.shape(xk)}\n")
@@ -267,7 +273,7 @@ def main():
     dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
     output_format = "{0: >5d} {1: >#016.8f} {2: >#016.8f} {3: >#016.8f} {4: >#016.8f} {5: >#016.8f} {6: >#016.8f}"
-    fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
+    fjt = dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt)  # noqa: F405
     fxt = dpk(xk, μj, params, idx, t=0*dt)  # noqa: F405
     Tk = np.sum(pj**2 / (2 * masses))
     if output_cfg.write_output_client:
@@ -304,7 +310,7 @@ def main():
         thermostat_cfg,
         i,
     ):
-        pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params) * dt2  # noqa: F405
+        pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt) * dt2  # noqa: F405
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         rj += pj * dt / masses
         pk += dpk(xk, μj, params, idx, t=(i*dt)) * dt2  # noqa: F405
@@ -316,7 +322,7 @@ def main():
         if calculate_dipole_derivatives and i % derivative_interval == 0:
             dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
-        fjt = dpj(xk, fj[:natoms], dµ, μj, params)  # noqa: F405
+        fjt = dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt)  # noqa: F405
         fxt = dpk(xk, μj, params, idx, t=(i*dt+ dt2))  # noqa: F405
 
         pj[:natoms] += fjt * dt2

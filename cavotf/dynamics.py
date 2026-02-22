@@ -40,6 +40,9 @@ def load_param(clean_template_dir: Path, config: Config):
         "ωl": config.physics.omega_l,
         "gl_val": config.physics.gl_val,
         "gl_n_active": config.physics.gl_n_active,
+        "ωlm": config.physics.omega_lm,
+        "gl_valm": config.physics.gl_valm,
+        "gl_n_activem": config.physics.gl_n_activem,
     }
     for key, value in overrides.items():
         if hasattr(param_obj, key):
