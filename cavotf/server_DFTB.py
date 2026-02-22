@@ -91,6 +91,10 @@ def vvlKC(q, p, param_obj, i, output_config):  # only for 1 cavity
             f.write("\t".join(map(str, qk)) + "\t" + "\t".join(map(str, pk)) + "\n")
         if output_config.print_k_space:
             print(f"Step {i}: qk={qk}, pk={pk}")
+    if i % 100 == 0:
+        with open("time.dat", "a") as f2:
+            f2.write(f"Step {i} ,time= {time.time():.6f}\n")
+            
 
     qk1 = qk * np.cos(ωk * dt2) + pk * np.sin(ωk * dt2) / ωk
     pk1 = pk * np.cos(ωk * dt2) - ωk * qk * np.sin(ωk * dt2)
