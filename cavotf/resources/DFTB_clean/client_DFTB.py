@@ -37,14 +37,32 @@ except Exception:  # noqa: BLE001
     OutputConfig = None
 
 
-def comm(msg, host, port):
+# def comm(msg, host, port):
+#     msg["execTime"] = time.time()
+#     payload = json.dumps(msg)
+#     with socket.socket() as cli:
+#         cli.connect((host, port))
+#         cli.sendall(payload.encode())
+#         reply = cli.recv(4096)
+#     return reply.decode().strip()
+    
+def comm(msg, host, port, chunk=65536):
     msg["execTime"] = time.time()
     payload = json.dumps(msg)
+
     with socket.socket() as cli:
         cli.connect((host, port))
-        cli.sendall(payload.encode())
-        reply = cli.recv(4096)
-    return reply.decode().strip()
+        cli.sendall(payload.encode("utf-8"))
+        cli.shutdown(socket.SHUT_WR)  # tell server we're done sending (often helps)
+
+        parts = []
+        while True:
+            data = cli.recv(chunk)
+            if not data:          # EOF: server closed its sending side
+                break
+            parts.append(data)
+
+    return b"".join(parts).decode("utf-8").strip()
 
 
 def apply_config_overrides(params, cfg, idx: str):
