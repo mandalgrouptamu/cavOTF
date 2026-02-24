@@ -123,50 +123,70 @@ def resultsfile(msg):
             f.write(f"{msg}\n")
 
 
+def recv_all(sock, chunk=65536):
+    buf = bytearray()
+    while True:
+        part = sock.recv(chunk)
+        if not part:  # client did shutdown(SHUT_WR)
+            break
+        buf += part
+    return bytes(buf)
+
 class Handler(socketserver.BaseRequestHandler):
     def handle(self):
-        with lock:
-            data = self.request.recv(4096).strip()
-            data = json.loads(data)
-            data["idx"] = int(data["idx"])
-            srv.stepdata[data["idx"]] = data["step"]
-            if srv.loglevel >= 2:
-                print(srv.stepdata, "pings from:", data["idx"], "| Server step:", srv.step)
+        try:
+            raw = recv_all(self.request)          
+            data = json.loads(raw.decode("utf-8"))
+        except Exception as e:
+            try:
+                self.request.sendall(json.dumps({"ok": False, "error": repr(e)}).encode("utf-8"))
+            except Exception:
+                pass
+            return
 
-            if srv.stepdata[data["idx"]] > srv.step and srv.update[data["idx"]]:
-                srv.qs[data["idx"]] = data["q"]
-                srv.ps[data["idx"]] = data["p"]
-                srv.update[data["idx"]] = False
+        try:
+            with lock:
+                idx = int(data["idx"])
+                step = int(data["step"])
+                srv.stepdata[idx] = step
 
-            if all(srv.stepdata == srv.stepdata[data["idx"]]) and srv.stepdata[data["idx"]] > srv.step:
-                srv.qs[:], srv.ps[:] = server(srv.qs[:], srv.ps[:], param_obj, srv.step, srv.output_config)
-                resultsfile(f"{srv.step + 1} {' '.join(srv.qs.astype(str))}")
+                if srv.loglevel >= 2:
+                    print(srv.stepdata, "pings from:", idx, "| Server step:", srv.step)
 
-                srv.step += 1
-                if srv.loglevel >= 1:
-                    logfile(f"Step {srv.step} | {time.time() - srv.t0:.2f} s")
-                    srv.t0 = time.time()
-                    logfile("---------------------")
-                srv.update = [True for _ in range(srv.N)]
+                if srv.stepdata[idx] > srv.step and srv.update[idx]:
+                    srv.qs[idx] = data["q"]
+                    srv.ps[idx] = data["p"]
+                    srv.update[idx] = False
 
-            reply = {
-                "N": srv.N,
-                "ids": list(srv.ids),
-                "step": srv.step,
-                "q": srv.qs[data["idx"]],
-                "p": srv.ps[data["idx"]],
-            }
-            self.request.sendall(json.dumps(reply).encode())
+                if all(srv.stepdata == srv.stepdata[idx]) and srv.stepdata[idx] > srv.step:
+                    srv.qs[:], srv.ps[:] = server(srv.qs[:], srv.ps[:], param_obj, srv.step, srv.output_config)
+                    resultsfile(f"{srv.step + 1} {' '.join(srv.qs.astype(str))}")
 
-            thisKilled = eval(data["killed"]) if isinstance(data["killed"], str) else data["killed"]
-            if thisKilled:
-                srv.killed[data["idx"]] = True
+                    srv.step += 1
+                    if srv.loglevel >= 1:
+                        logfile(f"Step {srv.step} | {time.time() - srv.t0:.2f} s")
+                        srv.t0 = time.time()
+                        logfile("---------------------")
+                    srv.update = [True for _ in range(srv.N)]
 
-            if all(srv.killed):
-                if srv.loglevel >= 1:
-                    logfile("All clients killed. Exiting server.")
-                self.request.close()
-                srv.shutdown()
+                reply = {
+                    "ok": True,
+                    "N": srv.N,
+                    "ids": list(srv.ids),
+                    "step": srv.step,
+                    "q": srv.qs[idx],
+                    "p": srv.ps[idx],
+                }
+
+            # send outside lock (optional, reduces time holding lock)
+            self.request.sendall(json.dumps(reply).encode("utf-8"))
+
+        except Exception as e:
+            try:
+                self.request.sendall(json.dumps({"ok": False, "error": repr(e)}).encode("utf-8"))
+            except Exception:
+                pass
+            return
 
 
 if __name__ == "__main__":
