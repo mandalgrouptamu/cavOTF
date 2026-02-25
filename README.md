@@ -81,7 +81,9 @@ The `input.txt.example` file provides an example configuration, including all su
 
 The package includes the default `DFTB_clean` templates and `server_DFTB.py`, making these resources available even when running from an installed package. You can override the template directory via the `clean_template_dir` option in the `[general]` section if custom DFTB+ input files are required. -->
 
-### Time scaling with number of atoms  
+### Time scaling with number of atoms 
+
+
 <p align="left">
   <img src="/scaling_plot.png" alt="CavityOTF" width="600"/>
 </p>
