@@ -82,6 +82,9 @@ The `input.txt.example` file provides an example configuration, including all su
 The package includes the default `DFTB_clean` templates and `server_DFTB.py`, making these resources available even when running from an installed package. You can override the template directory via the `clean_template_dir` option in the `[general]` section if custom DFTB+ input files are required. -->
 
 ---
+<p align="center">
+  <img src="/scaling_plot.png" alt="CavityOTF" width="300"/>
+</p>
 
 **Authors:**  
 Sachith Wickramasinghe, Amir H. Amini, Arkajit Mandal  
