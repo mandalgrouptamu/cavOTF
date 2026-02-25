@@ -83,7 +83,6 @@ The package includes the default `DFTB_clean` templates and `server_DFTB.py`, ma
 
 ### Time scaling with number of atoms 
 
-
 <p align="left">
   <img src="/scaling_plot.png" alt="CavityOTF" width="600"/>
 </p>
