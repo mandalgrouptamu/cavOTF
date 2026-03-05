@@ -51,7 +51,7 @@ def apply_config_overrides(params: param, config_path: pathlib.Path | None) -> N
         "ωlm": cfg.physics.omega_lm,
         "gl_valm": cfg.physics.gl_valm,
         "gl_n_activem": cfg.physics.gl_n_activem,
-
+        "toff_lm": cfg.physics.toff_lm,
 
     }
     for key, value in overrides.items():

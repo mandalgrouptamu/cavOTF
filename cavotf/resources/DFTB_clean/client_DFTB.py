@@ -80,6 +80,8 @@ def apply_config_overrides(params, cfg, idx: str):
         "ωlm": cfg.physics.omega_lm,
         "gl_valm": cfg.physics.gl_valm,
         "gl_n_activem": cfg.physics.gl_n_activem,
+        "toff_lm": cfg.toff_lm,
+        
         
     }
     for key, value in overrides.items():
@@ -328,7 +330,7 @@ def main():
         thermostat_cfg,
         i,
     ):
-        pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt) * dt2  # noqa: F405
+        pj[:natoms] += dpj(xk, fj[:natoms], dµ, μj, params, idx, t=(i*dt)) * dt2  # noqa: F405
         pj[natoms:3 * natoms] += fj[natoms:3 * natoms] * dt2
         rj += pj * dt / masses
         pk += dpk(xk, μj, params, idx, t=(i*dt)) * dt2  # noqa: F405
@@ -340,7 +342,7 @@ def main():
         if calculate_dipole_derivatives and i % derivative_interval == 0:
             dµ = getdµ(natoms, rj, μj, atm, box, dr=derivative_displacement)
 
-        fjt = dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt)  # noqa: F405
+        fjt = dpj(xk, fj[:natoms], dµ, μj, params, idx, t=(i*dt+ dt2))  # noqa: F405
         fxt = dpk(xk, μj, params, idx, t=(i*dt+ dt2))  # noqa: F405
 
         pj[:natoms] += fjt * dt2
