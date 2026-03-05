@@ -12,12 +12,17 @@ import numpy as np
 from numpy.random import normal as gran
 from types import SimpleNamespace
 
+def laser_envelope(t, toff):
+    return 1.0 if t < toff else 0.0
+
 def dpk(x, µ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
     idx = int(idx)
+    laser = par.gl[idx]*np.sin(par.ωl * t )
+    laser *= laser_envelope(t, par.toff_lm) # 
     
-    return  - ηb * µ - par.gl[idx]*np.sin(par.ωl * t )
+    return  - ηb * µ - laser
 
 def dpkT(x, µ, par):
     ηb = par.ηb
@@ -25,13 +30,14 @@ def dpkT(x, µ, par):
     return -ωc**2 * x  - ηb * µ
 
 
-
-def dpj(x, fj, dµ, μ, par, idx, t=0):
+def dpj(x, fj, dμ, μ, par, idx, t=0):
     ηb = par.ηb
     ωc = par.ωc
     idx = int(idx)
+    laser = dμ * par.glm[idx]*np.sin(par.ωlm * t)
+    laser *= laser_envelope(t, par.toff_lm)
 
-    return fj - ηb * dµ * x - (ηb**2 * dµ * µ /ωc**2) - (dµ * par.glm[idx]*np.sin(par.ωlm * t))
+    return fj - ηb * dμ * x - (ηb**2 * dμ * μ /ωc**2) - laser
 
 def vvl(x, p, µ, param, f1): #only for 1 cavity
     ndof = 1
@@ -83,6 +89,7 @@ def default_physics():
         gl_valm=0.0,
         gl_n_activem=0,
         eta_b=0.0002,
+        toff_lm = 10000000
     )
 
 
@@ -119,8 +126,9 @@ class param:
         self.ωlm = physics.omega_lm
         gl_val_Ham = physics.gl_valm / 27.2114
         glm = np.zeros(self.nk)
-        gl[:min(physics.gl_n_activem, self.nk)] = gl_val_Ham
+        glm[:min(physics.gl_n_activem, self.nk)] = gl_val_Ham
         self.glm = glm
+        self.toff_lm = physics.toff_lm
         
         
         ky = np.fft.fftfreq(self.nk) * self.nk * 2 * np.pi / (Lx)

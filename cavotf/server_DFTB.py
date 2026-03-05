@@ -216,6 +216,7 @@ if __name__ == "__main__":
                 "ωlm": cfg.physics.omega_lm,
                 "gl_valm": cfg.physics.gl_valm,
                 "gl_n_activem": cfg.physics.gl_n_activem,
+                "toff_lm": config.physics.toff_lm,
             }
             for key, value in overrides.items():
                 if hasattr(param_obj, key):
