@@ -101,7 +101,7 @@ class param:
         self.ω0 = self.ωc
         self.β  = physics.beta #* (300.0/200.0)
         self.λ = physics.lambda_
-        self.natoms = 99 # number of atoms in the MD simulation
+        self.natoms = getattr(physics, "natoms", 99) # number of atoms in the MD simulation
         self.box = 10.0 # size of the periodic box
         self.c = 137.0 
 

@@ -169,6 +169,7 @@ def main():
     if args.config and load_config and _recompute_mode_grid:
         try:
             cfg = load_config(pathlib.Path(args.config))
+            atm = str(cfg.dftb.parameters.get("label", atm))
             params = param(physics = cfg.physics)
             # apply_config_overrides(params, cfg, idx)
             derivative_interval = cfg.physics.dipole_derivative_interval

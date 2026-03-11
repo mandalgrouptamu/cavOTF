@@ -97,7 +97,7 @@ def main() -> None:
     velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
     coordinates = np.array(coordina_initial) * bhr  # a.u.
 
-    atm_symbols = args.atm_symbols
+    atm_symbols = str(cfg.dftb.parameters.get("label", args.atm_symbols))
 
     atoms = Atoms(atm_symbols, positions=coordinates / bhr)
     mass = atoms.get_masses() * 1822.8884

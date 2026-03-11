@@ -16,6 +16,26 @@ from ase import Atoms
 
 
 # Default calculator options (can be overridden via cavotf [dftb] config section)
+# DEFAULT_CALCULATOR_OPTIONS = {
+#     "label": "O33H66",
+#     "Hamiltonian_SCC": "Yes",
+#     "Hamiltonian_SCCTolerance": 1e-5,
+#     "Hamiltonian_MaxSCCIterations": 400,
+#     "Hamiltonian_Mixer": "Anderson { MixingParameter = 0.026 }",
+#     "Hamiltonian_ConvergentSccOnly": "No",
+#     "Hamiltonian_MaxAngularMomentum_": "",
+#     "Hamiltonian_MaxAngularMomentum_O": "p",
+#     "Hamiltonian_MaxAngularMomentum_H": "s",
+#     "Hamiltonian_Charge": 0.0,
+#     "Hamiltonian_ReadInitialCharges": "Yes",
+#     "Hamiltonian_SpinConstants": "{O = { -0.035 -0.030 -0.030 -0.028 } H = { -0.072 }}",
+#     "Options_WriteDetailedXml": "No",
+#     "Options_WriteEigenvectors": "No",
+#     "Options_WriteResultsTag": "Yes",
+#     "kpts": (3, 3, 3),
+# }
+
+
 DEFAULT_CALCULATOR_OPTIONS = {
     "label": "O33H66",
     "Hamiltonian_SCC": "Yes",
@@ -23,12 +43,8 @@ DEFAULT_CALCULATOR_OPTIONS = {
     "Hamiltonian_MaxSCCIterations": 400,
     "Hamiltonian_Mixer": "Anderson { MixingParameter = 0.026 }",
     "Hamiltonian_ConvergentSccOnly": "No",
-    "Hamiltonian_MaxAngularMomentum_": "",
-    "Hamiltonian_MaxAngularMomentum_O": "p",
-    "Hamiltonian_MaxAngularMomentum_H": "s",
     "Hamiltonian_Charge": 0.0,
     "Hamiltonian_ReadInitialCharges": "Yes",
-    "Hamiltonian_SpinConstants": "{O = { -0.035 -0.030 -0.030 -0.028 } H = { -0.072 }}",
     "Options_WriteDetailedXml": "No",
     "Options_WriteEigenvectors": "No",
     "Options_WriteResultsTag": "Yes",
@@ -64,7 +80,8 @@ def caldftb(atm, coordinates, box, force=True, charge=True):
     atoms.set_pbc(True)   # Enable periodic boundary conditions
 
     options = dict(_CALCULATOR_OPTIONS)
-    options.setdefault("label", atm)
+    #options.setdefault("label", atm)
+    options["label"] = atm
     calc = Dftb(**options)
 
     atoms.calc = calc
