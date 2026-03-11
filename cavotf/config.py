@@ -91,6 +91,8 @@ class PhysicsConfig:
     gl_valm:float = 0.0
     gl_n_activem: int = 0
     toff_lm:float = 10000000
+    natoms:int = 99
+    
 
 
 @dataclasses.dataclass
@@ -338,6 +340,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     gl_valm = _parse_float(section.get("gl_valm", "0.005")) 
     gl_n_activem = int(section.get("gl_n_activem", 5))
     toff_lm = _parse_float(section.get("toff_lm", "10000000"))
+    natoms = int(section.get("natoms", 99))
     
 
     return PhysicsConfig(
@@ -361,7 +364,8 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
         omega_lm = omega_lm,
         gl_valm=gl_valm,
         gl_n_activem=gl_n_activem,
-        toff_lm=toff_lm
+        toff_lm=toff_lm,
+        natoms=natoms,
 
     )
 
