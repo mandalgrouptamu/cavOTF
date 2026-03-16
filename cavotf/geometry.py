@@ -2,8 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        geometry.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
-#
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/202625
 #  Description:
 #      Geometry preparation utilities for cavOTF.py simulations.
 # =============================================================================
@@ -41,7 +41,7 @@ def collect_geometry_cases(geometry_path: Path) -> List[Path]:
 def prepare_run_directories(config: Config, dry_run: bool = False, extend: bool = False) -> List[Path]:
     # Create run directories, each initialized with geometry and velocity files.
     logger = LOGGER.getChild("prepare")
-    # base = config.path.parent
+    base = config.path.parent
     
     if extend:
         run_dirs = [base / f"run-{idx}" for idx in range(config.physics.nk)]
@@ -75,7 +75,7 @@ def prepare_run_directories(config: Config, dry_run: bool = False, extend: bool 
     logger.info("Preparing %s run directories from %s geometries", config.physics.nk, len(cases))
 
     run_dirs: List[Path] = []
-    base = config.path.parent
+    # base = config.path.parent
     for idx, case in enumerate(selected):
         run_dir = base / f"run-{idx}"
         run_dirs.append(run_dir)
