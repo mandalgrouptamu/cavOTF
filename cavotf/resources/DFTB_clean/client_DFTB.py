@@ -1,8 +1,8 @@
 # =============================================================================
 #  Project:     cavOTF.py
 #  File:        client_DFTB.py
-#  Author:      Sachith Wickramasinghe
-#  Last update: 05/12/2025
+#  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/2026
 #
 #  Description:
 #  This is the main client file to perform DFTB based MD simulations with cavOTF.py
@@ -26,7 +26,8 @@ import numpy as np
 from ase import Atoms
 from ase.io import write
 from dftb import getForcesCharges, getCharges, getdµ, set_calculator_options
-from funcLM import *  # noqa: F403,F401
+from funcLM import *  # noqa: F403,
+import re
 
 try:
     from cavotf.config import OutputConfig, load_config
@@ -94,6 +95,32 @@ def apply_config_overrides(params, cfg, idx: str):
     if cfg.hpc.dftb_command:
         os.environ["DFTB_COMMAND"] = cfg.hpc.dftb_command
     set_calculator_options(cfg.dftb.parameters)
+    
+def load_midpoints(path="midpoint.dat"):
+    pat = re.compile(r"""
+        \s*(\d+)\s*
+        (\[[^\]]*\])\s*
+        (\[[^\]]*\])\s*
+        (\[[^\]]*\])\s*
+        (\[[^\]]*\])
+    """, re.S | re.X)
+
+    out = []
+    with open(path, "r") as f:
+        text = f.read()
+
+    for m in pat.finditer(text):
+        i  = int(m.group(1))
+        xk = np.fromstring(m.group(2)[1:-1], sep=" ")
+        pk = np.fromstring(m.group(3)[1:-1], sep=" ")
+        rj = np.fromstring(m.group(4)[1:-1], sep=" ")
+        pj = np.fromstring(m.group(5)[1:-1], sep=" ")
+        out.append((i, xk, pk, rj, pj))
+
+    if not out:
+        raise ValueError(f"No valid records found in {path}")
+
+    return out
 
 
 def _write_input_summary(cfg, params, atm_symbols: str, destination: pathlib.Path) -> None:
@@ -134,6 +161,7 @@ def main():
     parser.add_argument("--base", type=str, default=None, help="Base directory containing server_hostname.txt")
     parser.add_argument("--config", type=str, default=None, help="Path to cavotf input.txt")
     parser.add_argument("--atm-symbols", type=str, default="O33H66", help="Atomic symbols for the system (e.g., O33H66)")
+    parser.add_argument("--extend", action="store_true", help="Continue from midpoint.dat")
     args = parser.parse_args()
 
     workdir = pathlib.Path(args.workdir) if args.workdir else pathlib.Path.cwd()
@@ -200,36 +228,82 @@ def main():
     dt = params.dt
     dt2 = dt / 2
     thermal_steps = params.thermal_steps
-    coordina_initial = np.loadtxt("initXYZ.dat", usecols=(2, 3, 4))
-    velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
-    coordinates = np.array(coordina_initial) * bhr
-
-    velocity = np.array(velocity_initial) * AngdivPs2AU
-    vx, vy, vz = velocity[:, 0], velocity[:, 1], velocity[:, 2]
-
-    atoms = Atoms(atm, positions=coordinates / bhr)
-    mass = atoms.get_masses() * 1822.8884
+    # initialization block
     box = params.box
-    atoms.set_cell([box, box, box])
-    atoms.set_pbc(True)
-    px, py, pz = vx * mass, vy * mass, vz * mass
-
-    coordinates = atoms.get_positions(wrap=False) * bhr
-    atoms.set_positions(coordinates / bhr)
-
-    if output_cfg.write_xyz_trajectory:
-        write("coordinates.xyz", atoms, format="xyz", append=True)
-
-    pj = np.concatenate((px, py, pz))
-    masses = np.concatenate((mass, mass, mass))
-    rxj, ryj, rzj = coordinates[:, 0], coordinates[:, 1], coordinates[:, 2]
-    rj = np.concatenate((rxj, ryj, rzj))
-
-    fj, charges = getForcesCharges(rj, natoms, atm, box)
-    μj = np.sum(charges * rxj)
-
-    xk, pk = init(μj, params)  # noqa: F405
-    x_save = np.zeros((int(thermal_steps * 0.1)))
+    i_start = 0
+    
+    if args.extend:
+        records = load_midpoints("midpoint.dat")
+        i_start, xk, pk, rj, pj = records[-1]
+    
+        xk = np.atleast_1d(xk).astype(float)
+        pk = np.atleast_1d(pk).astype(float)
+        rj = np.asarray(rj, dtype=float)
+        pj = np.asarray(pj, dtype=float)
+    
+        rxj = rj[:natoms]
+        ryj = rj[natoms:2 * natoms]
+        rzj = rj[2 * natoms:3 * natoms]
+        coordinates = np.column_stack((rxj, ryj, rzj))
+    
+        atoms = Atoms(atm, positions=coordinates / bhr)
+        mass = atoms.get_masses() * 1822.8884
+        atoms.set_cell([box, box, box])
+        atoms.set_pbc(True)
+    
+        masses = np.concatenate((mass, mass, mass))
+    
+        fj, charges = getForcesCharges(rj, natoms, atm, box)
+        Rcom = np.sum(rj[:natoms] * mass) / np.sum(mass)
+        μj = np.sum(charges * (rj[:natoms] - Rcom))
+    
+        print(f"Restarting from midpoint.dat at step {i_start}")
+        
+        
+    else:
+        coordina_initial = np.loadtxt("initXYZ.dat", usecols=(2, 3, 4))
+        velocity_initial = np.loadtxt("initPxPyPz.dat", usecols=(0, 1, 2))
+        coordinates = np.array(coordina_initial) * bhr
+    
+        velocity = np.array(velocity_initial) * AngdivPs2AU
+        vx, vy, vz = velocity[:, 0], velocity[:, 1], velocity[:, 2]
+    
+        atoms = Atoms(atm, positions=coordinates / bhr)
+        mass = atoms.get_masses() * 1822.8884
+        box = params.box
+        atoms.set_cell([box, box, box])
+        atoms.set_pbc(True)
+        px, py, pz = vx * mass, vy * mass, vz * mass
+    
+        coordinates = atoms.get_positions(wrap=False) * bhr
+        atoms.set_positions(coordinates / bhr)
+    
+        if output_cfg.write_xyz_trajectory:
+            write("coordinates.xyz", atoms, format="xyz", append=True)
+    
+        pj = np.concatenate((px, py, pz))
+        masses = np.concatenate((mass, mass, mass))
+        rxj, ryj, rzj = coordinates[:, 0], coordinates[:, 1], coordinates[:, 2]
+        rj = np.concatenate((rxj, ryj, rzj))
+    
+        fj, charges = getForcesCharges(rj, natoms, atm, box)
+        μj = np.sum(charges * rxj)
+    
+        xk, pk = init(μj, params)  # noqa: F405
+        x_save = np.zeros((int(thermal_steps * 0.1)))
+        
+    
+        xk, pk = np.loadtxt("initial.dat").T
+        xk = np.array([xk])
+        pk = np.array([pk])
+    
+    # if output_cfg.write_histogram:
+    #     data = np.histogram(x_save, bins=100)
+    #     np.savetxt
+    if output_cfg.write_histogram and not args.extend:
+        data = np.histogram(x_save, bins=100)
+        np.savetxt("hist_coupled.txt", np.c_[data[1][1:], data[0]])
+    print("Thermalization done")
     
     with open("cavity_params.dat", "w") as f:
         f.write("=== Cavity parameters (sanity check) ===\n")
@@ -263,18 +337,9 @@ def main():
         for i, g in enumerate(params.gl[:10]):
             f.write(f"  k={i:3d}  gl={g:.6e} Ha\n")
 
-
-    if output_cfg.write_histogram:
-        data = np.histogram(x_save, bins=100)
-        np.savetxt("hist_coupled.txt", np.c_[data[1][1:], data[0]])
-    print("Thermalization done")
-
-    xk, pk = np.loadtxt("initial.dat").T
-    xk = np.array([xk])
-    pk = np.array([pk])
-
-    pk += dpk(xk, μj, params, idx, t=0*dt) * dt2  # noqa: F405
-    pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
+    if not args.extend:
+        pk += dpk(xk, μj, params, idx, t=0*dt) * dt2  # noqa: F405
+        pk = pk * np.cos(params.ωc * dt2) - params.ωc * xk * np.sin(params.ωc * dt2)
 
     f = None
     outfile = "qt.out"
@@ -297,8 +362,9 @@ def main():
     fjt = dpj(xk, fj[:natoms], dµ, μj, params, idx, t=0*dt)  # noqa: F405
     fxt = dpk(xk, μj, params, idx, t=0*dt)  # noqa: F405
     Tk = np.sum(pj**2 / (2 * masses))
+    initial_step = i_start
     if output_cfg.write_output_client:
-        print(output_format.format(0, xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
+        print(output_format.format(initial_step, xk[0], pk[0], np.sum(μj), fxt, fjt[0], Tk), file=f)
         
 
     def andersen_thermostat(Px, Py, Pz, mass, β, timestep, N_atoms):
@@ -397,7 +463,7 @@ def main():
     sleeptime = 1.5
     loglevel = 2
 
-    for i in range(steps):
+    for i in range(i_start, i_start + steps):
         dat = {"q": q, "p": p, "idx": idx, "killed": False, "step": i}
         reply = json.loads(comm(dat, host, port))
         globalStep = reply["step"]
@@ -415,7 +481,7 @@ def main():
         pk[0] = p
 
         if loglevel >= 1:
-            print(q, f"Step {i + 1} of {steps}")
+            print(q, f"Step {i + 1} of {i_start + steps}")
 
         rj, pj, xk, pk, fj, μj, dµ, f = calculation(
             rj,
@@ -441,7 +507,7 @@ def main():
         globalStep = reply["step"]
 
     dat["killed"] = True
-    dat["step"] = steps
+    dat["step"] = i_start + steps
     dat["q"] = xk[0]
     dat["p"] = pk[0]
     comm(dat, host, port)

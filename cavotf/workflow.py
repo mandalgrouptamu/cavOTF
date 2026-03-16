@@ -2,8 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        workflow.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
-#
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/2026
 #  Description:
 #      Workflow management for cavOTF.py simulations, including validation and execution.
 # =============================================================================
@@ -43,32 +43,38 @@ def validate_workflow(config: Config) -> None:
         LOGGER.info("Would submit dynamics sbatch script:\n%s", script_text)
 
 
-def run_workflow(config: Config) -> None:
+def run_workflow(config: Config, extend: bool = False) -> None:
     # This routine executes the full workflow, including job submission and monitoring.
-    LOGGER.info("Running workflow from %s", config.path)
-    run_dirs = prepare_run_directories(config, dry_run=False)
-
-    get_mu_conf = prepare_get_mu(config, run_dirs, dry_run=False)
-    if config.hpc.run_get_mu:
-        if isinstance(get_mu_conf, list):
-            for i in range(len(get_mu_conf)):
-                min_ntask = len(run_dirs) - (len(run_dirs)//200)*200 
-                ntask = 200 if (i !=(len(get_mu_conf)-1)) else min_ntask
-        
-                script_text = render_sbatch(config, get_mu_conf[i], job_name="getMU", ntasks=ntask)
-                script_path = write_sbatch(script_text, config.path.parent / f"get_mu_{i}.sh")
-                submit_job(script_path, dry_run=False)
+    if extend:
+        LOGGER.info("Extending workflow from %s", config.path)
+    else:
+        LOGGER.info("Running workflow from %s", config.path)
+    run_dirs = prepare_run_directories(config, dry_run=False, extend=extend)
     
-        else:
-            script_text = render_sbatch(config, get_mu_conf, job_name="getMU", ntasks=len(run_dirs))
-            script_path = write_sbatch(script_text, config.path.parent / "get_mu.sh")
-            submit_job(script_path, dry_run=False)
-        _wait_for_dipoles(run_dirs)
+    if not extend:
+        get_mu_conf = prepare_get_mu(config, run_dirs, dry_run=False)
+        if config.hpc.run_get_mu:
+            if isinstance(get_mu_conf, list):
+                for i in range(len(get_mu_conf)):
+                    min_ntask = len(run_dirs) - (len(run_dirs)//200)*200 
+                    ntask = 200 if (i !=(len(get_mu_conf)-1)) else min_ntask
+            
+                    script_text = render_sbatch(config, get_mu_conf[i], job_name="getMU", ntasks=ntask)
+                    script_path = write_sbatch(script_text, config.path.parent / f"get_mu_{i}.sh")
+                    submit_job(script_path, dry_run=False)
+        
+            else:
+                script_text = render_sbatch(config, get_mu_conf, job_name="getMU", ntasks=len(run_dirs))
+                script_path = write_sbatch(script_text, config.path.parent / "get_mu.sh")
+                submit_job(script_path, dry_run=False)
+            _wait_for_dipoles(run_dirs)
+    
+        # Initialize cavity coordinates using dmu.dat produced by get_mu.
+        initialize_cavity(config, run_dirs, dry_run=False)
+    else:
+        LOGGER.info("Extend mode: skipping get_mu and cavity initialization")
 
-    # Initialize cavity coordinates using dmu.dat produced by get_mu.
-    initialize_cavity(config, run_dirs, dry_run=False)
-
-    run_conf = prepare_run(config, run_dirs, dry_run=False)
+    run_conf = prepare_run(config, run_dirs, dry_run=False, extend=extend)
     if config.hpc.run_dynamics:
         if isinstance(run_conf, list):
             for i in range(len(run_conf)):

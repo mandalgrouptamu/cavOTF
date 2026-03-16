@@ -2,8 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        geometry.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
-#
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/202625
 #  Description:
 #      Geometry preparation utilities for cavOTF.py simulations.
 # =============================================================================
@@ -38,9 +38,26 @@ def collect_geometry_cases(geometry_path: Path) -> List[Path]:
     return entries
 
 
-def prepare_run_directories(config: Config, dry_run: bool = False) -> List[Path]:
+def prepare_run_directories(config: Config, dry_run: bool = False, extend: bool = False) -> List[Path]:
     # Create run directories, each initialized with geometry and velocity files.
     logger = LOGGER.getChild("prepare")
+    base = config.path.parent
+    
+    if extend:
+        run_dirs = [base / f"run-{idx}" for idx in range(config.physics.nk)]
+        logger.info("Using %s existing run directories for extend mode", len(run_dirs))
+
+        if dry_run:
+            return run_dirs
+
+        for run_dir in run_dirs:
+            if not run_dir.exists():
+                raise FileNotFoundError(f"Extend mode requested but run directory does not exist: {run_dir}")
+            if not (run_dir / "midpoint.dat").is_file():
+                raise FileNotFoundError(f"Extend mode requested but midpoint.dat not found in: {run_dir}")
+
+        return run_dirs
+    
     cases = collect_geometry_cases(config.general.geometry_path)
     if len(cases) == 0:
         raise ValueError(f"No geometry folders found in: {config.general.geometry_path}")
@@ -58,13 +75,20 @@ def prepare_run_directories(config: Config, dry_run: bool = False) -> List[Path]
     logger.info("Preparing %s run directories from %s geometries", config.physics.nk, len(cases))
 
     run_dirs: List[Path] = []
-    base = config.path.parent
+    # base = config.path.parent
     for idx, case in enumerate(selected):
         run_dir = base / f"run-{idx}"
         run_dirs.append(run_dir)
         logger.debug("Setting up %s from source %s", run_dir, case)
         if dry_run:
             continue
+        # if extend:
+        #     if not run_dir.exists():
+        #         raise FileNotFoundError(f"Extend mode requested but run directory does not exist: {run_dir}")
+        #     if not (run_dir / "midpoint.dat").is_file():
+        #         raise FileNotFoundError(f"Extend mode requested but midpoint.dat not found in: {run_dir}")
+        #     continue
+        
         if run_dir.exists():
             shutil.rmtree(run_dir)
         run_dir.mkdir(parents=True)

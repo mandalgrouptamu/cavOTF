@@ -1,7 +1,7 @@
 # =============================================================================
 #  Project:     cavOTF.py
 #  File:        server_DFTB.py
-#  Author:      Sachith Wickramasinghe
+#  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
 #  Modified by: Amir H. Amini <amiramini@tamu.edu>
 #  Last update: 02/03/2026
 #

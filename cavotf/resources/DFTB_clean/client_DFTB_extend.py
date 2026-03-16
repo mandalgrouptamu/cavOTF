@@ -1,8 +1,8 @@
 # =============================================================================
 #  Project:     cavOTF.py
-#  File:        Client_DFTB_extend.py
-#  Author:      Sachith Wickramasinghe 
-#  Last update: 11/28/2025
+#  File:        client_DFTB_extend.py
+#  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/2026
 #
 #  Description:
 #  This file is currently not in use, I'll consider using it later if needed.
