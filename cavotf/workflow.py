@@ -43,9 +43,12 @@ def validate_workflow(config: Config) -> None:
         LOGGER.info("Would submit dynamics sbatch script:\n%s", script_text)
 
 
-def run_workflow(config: Config) -> None:
+def run_workflow(config: Config, extend: bool = False) -> None:
     # This routine executes the full workflow, including job submission and monitoring.
-    LOGGER.info("Running workflow from %s", config.path)
+    if extend:
+        LOGGER.info("Extending workflow from %s", config.path)
+    else:
+        LOGGER.info("Running workflow from %s", config.path)
     run_dirs = prepare_run_directories(config, dry_run=False)
 
     get_mu_conf = prepare_get_mu(config, run_dirs, dry_run=False)

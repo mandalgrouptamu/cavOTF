@@ -2,7 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        cli.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 03/01/2026
+#  Modified by: Sachith Wickramasinghe
+#  Last update: 03/16/2026
 #
 #  Description:
 #      Command-line interface for cavOTF.py simulations, including argument
@@ -73,6 +74,9 @@ def _parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
 
     validate_parser = subparsers.add_parser("validate", help="Validate configuration and print planned actions")
     validate_parser.set_defaults(command="validate")
+    
+    extend_parser = subparsers.add_parser("extend", help="Continue an existing workflow from saved midpoint data")
+    extend_parser.set_defaults(command="extend")
 
     return parser.parse_args(args)
 
@@ -92,6 +96,8 @@ def main(argv: Optional[list[str]] = None) -> None:
         validate_workflow(config)
     elif args.command == "run":
         run_workflow(config)
+    elif args.command == "extend":
+        run_workflow(config, extend=True)
     else:  # pragma: no cover - argparse ensures coverage
         raise SystemExit(f"Unknown command: {args.command}")
 
