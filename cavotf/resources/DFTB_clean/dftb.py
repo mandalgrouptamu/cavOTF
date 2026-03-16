@@ -1,7 +1,7 @@
 # =============================================================================
 #  Project:     cavOTF.py
 #  File:        dftb.py
-#  Author:      Sachith Wickramasinghe
+#  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
 #  Last update: 11/28/2025
 #
 #  Description:

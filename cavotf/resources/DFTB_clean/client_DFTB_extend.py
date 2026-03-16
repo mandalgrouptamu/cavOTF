@@ -1,7 +1,7 @@
 # =============================================================================
 #  Project:     cavOTF.py
 #  File:        client_DFTB_extend.py
-#  Author:      Sachith Wickramasinghe 
+#  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
 #  Last update: 03/16/2026
 #
 #  Description:

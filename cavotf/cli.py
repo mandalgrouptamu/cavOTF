@@ -2,7 +2,7 @@
 #  Project:     cavOTF.py
 #  File:        cli.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Modified by: Sachith Wickramasinghe
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
 #  Last update: 03/16/2026
 #
 #  Description:

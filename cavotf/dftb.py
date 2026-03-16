@@ -2,8 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        dftb.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
-#
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/16/2026
 #  Description:
 #      DFTB+ integration routines.
 #      Note: I will consider renaming this script later to avoid conflict.
@@ -53,15 +53,19 @@ def prepare_get_mu(config: Config, run_dirs: List[Path], dry_run: bool = False) 
         return write_conf(prefixed, base / "get_mu.conf", dry_run=dry_run)
 
 
-def prepare_run(config: Config, run_dirs: List[Path], dry_run: bool = False) -> Path:
+def prepare_run(config: Config, run_dirs: List[Path], dry_run: bool = False, extend: bool = False,) -> Path:
     # Generate the main run multiprog file (server + clients).
     base = config.path.parent
     config_arg = f"--config {config.path}"
     server_script = server_script_path()
     commands = [f"python {server_script} {len(run_dirs)} {config_arg}"]
     client_script = config.general.clean_template_dir / "client_DFTB.py"
+    client_extra = " --extend" if extend else ""
+    # commands.extend(
+    #     f"python {client_script} {idx} --workdir {run_dir} --base {base} {config_arg}" for idx, run_dir in enumerate(run_dirs)
+    # )
     commands.extend(
-        f"python {client_script} {idx} --workdir {run_dir} --base {base} {config_arg}" for idx, run_dir in enumerate(run_dirs)
+        f"python {client_script} {idx} --workdir {run_dir} --base {base} {config_arg}{client_extra}" for idx, run_dir in enumerate(run_dirs)
     )
     if len(commands) > 200:
         nc = len(commands)
