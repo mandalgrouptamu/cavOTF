@@ -40,7 +40,7 @@ Once installed, you can use the following commands:
 
 - `cavotf --config input.txt validate` — Perform a dry-run validation without submitting jobs.
 - `cavotf --config input.txt run` — Execute the full workflow, including sbatch job submissions.
-- `cavotf --config input.txt extend` — Extend an existing simulation by preparing the next segment from a previous run.
+- `cavotf --config input.txt extend` — Continue a simulation from a previous run.
 - `python -m cavotf --config input.txt ...` — Invoke the module programmatically, equivalent to the CLI.
 
 ## Quickstart
