@@ -45,9 +45,15 @@ def _print_banner() -> None:
 ╠═══════════════════════════════════════════════════════════╣
 ║      Mandal Group • Texas A&M University • 2025-2026      ║
 ╚═══════════════════════════════════════════════════════════╝
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
- If you use this software (in whole or in part), please cite:
- DOI: 10.1039/D5CP04879F.
+      This software implements the method published in:
+
+     "On-the-fly cavity-molecular dynamics of vibrational
+                         polaritons"
+        S. Wickramasinghe, A. Amini, and A. Mandal
+       Phys. Chem. Chem. Phys. (2026) | 10.1039/D5CP04879F.
+
+    Please cite the above reference in any publications or 
+    technical reports resulting from the use of this code.
 ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
 """
         for line in banner.splitlines():
