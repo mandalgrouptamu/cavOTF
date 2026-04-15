@@ -2,7 +2,8 @@
 #  Project:     cavOTF.py
 #  File:        config.py
 #  Author:      Amir H. Amini <amiramini@tamu.edu>
-#  Last update: 11/28/2025
+#  Modified by: Sachith Wickramasinghe <sachithpw@tamu.edu>
+#  Last update: 03/30/2026
 #
 #  Description:
 #      Configuration management for cavOTF.py simulations, including parameter
@@ -76,6 +77,7 @@ class PhysicsConfig:
     lambda_: float
     omega_c: float
     eta_b: float
+    Lx: float = 0.0
     use_thermostat: bool = True
     thermostat_type: str = "andersen"
     thermostat_steps: int = 250
@@ -319,6 +321,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     section = config["physics"]
 
     nk = int(_require(section, "nk"))
+    Lx = _parse_float(section.get("Lx", "0.0"))
     beta = _parse_float(_require(section, "beta"))
     beta_run0_raw = section.get("beta_run0")
     beta_run0 = _parse_float(beta_run0_raw) if beta_run0_raw is not None else beta
@@ -350,6 +353,7 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
         lambda_=lambda_,
         omega_c=omega_c,
         eta_b=eta_b,
+        Lx=Lx,
         use_thermostat=use_thermostat,
         thermostat_type=thermostat_type,
         thermostat_steps=thermostat_steps,
@@ -433,4 +437,4 @@ def load_config(path: Path) -> Config:
         dftb=dftb,
     )
 
-from .resources import default_template_dir
+# from .resources import default_template_dir
