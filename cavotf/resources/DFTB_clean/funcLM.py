@@ -2,7 +2,7 @@
 #  Project:     cavOTF.py
 #  File:        dftb.py
 #  Author:      Sachith Wickramasinghe <sachithpw@tamu.edu>
-#  Last update: 02/02/2026
+#  Last update: 03/30/2026
 #
 #  Description:
 #  parameters and functions.
@@ -82,6 +82,7 @@ def default_physics():
         beta=1052.8,
         lambda_=0.001,
         nk=81,
+        Lx=200000 * 4,
         omega_l=0.0,
         gl_val=0.0,
         gl_n_active=0,
@@ -113,7 +114,7 @@ class param:
         self.dt = dt * 41.3413733365614
         self.thermal_steps = int(thermal_time // dt)
 
-        Lx = 200000 * 4
+        Lx = physics.Lx
         self.nk = physics.nk
         self.dL = Lx/self.nk
         
