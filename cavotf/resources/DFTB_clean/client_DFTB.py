@@ -315,9 +315,10 @@ def main():
         f.write(f"lambda          = {params.λ}\n")
         f.write(f"eta_b           = {params.ηb}\n")
         f.write(f"thermal_steps   = {params.thermal_steps}\n")
+        f.write(f"dL              = {params.dL}\n")
         f.write("\n")
     
-        f.write("Light–matter coupling:\n")
+        f.write("laser coupling:\n")
         f.write(f"  gl_n_active   = {np.count_nonzero(params.gl)}\n")
         f.write(f"  gl_max (Ha)   = {params.gl.max():.6e}\n")
         f.write(f"  gl_max (eV)   = {params.gl.max() * 27.2114:.6e}\n")
