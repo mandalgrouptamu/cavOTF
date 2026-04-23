@@ -76,6 +76,7 @@ class PhysicsConfig:
     lambda_: float
     omega_c: float
     eta_b: float
+    Lx: float = 200000 * 4
     use_thermostat: bool = True
     thermostat_type: str = "andersen"
     thermostat_steps: int = 250
@@ -319,6 +320,8 @@ def _load_physics(config: configparser.ConfigParser) -> PhysicsConfig:
     section = config["physics"]
 
     nk = int(_require(section, "nk"))
+#    Lx = _parse_float(section.get("Lx", "0.0"))
+    Lx = _parse_float(_require(section, "Lx"))
     beta = _parse_float(_require(section, "beta"))
     beta_run0_raw = section.get("beta_run0")
     beta_run0 = _parse_float(beta_run0_raw) if beta_run0_raw is not None else beta
