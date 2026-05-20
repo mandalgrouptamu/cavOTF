@@ -88,7 +88,8 @@ def vvlKC(q, p, param_obj, i, output_config):  # only for 1 cavity
 
     if output_config.record_k_space:
         with open("qkpk.dat", "a") as f:
-            f.write("\t".join(map(str, qk)) + "\t" + "\t".join(map(str, pk)) + "\n")
+            # f.write("\t".join(map(str, qk)) + "\t" + "\t".join(map(str, pk)) + "\n")
+            f.write(str(i) + "\t" + "\t".join(map(str, qk)) + "\t" + "\t".join(map(str, pk)) + "\n")
         if output_config.print_k_space:
             print(f"Step {i}: qk={qk}, pk={pk}")
     if i % 10 == 0:
@@ -244,7 +245,15 @@ if __name__ == "__main__":
     srv.update = [True for _ in range(srv.N)]
     srv.qs = np.zeros(param_obj.nk)
     srv.ps = np.zeros(param_obj.nk)
-    srv.step = -1
+    # srv.step = -1
+    
+    if os.path.exists("run-0/midpoint.dat"):
+        with open("run-0/midpoint.dat") as f:
+            saved_step = int(f.readline().split()[0])
+        srv.step = saved_step - 1
+    else:
+        srv.step = -1
+    
     srv.stepdata = np.zeros(srv.N) - 1
     srv.loglevel = 2
     srv.killed = [False for _ in range(srv.N)]
