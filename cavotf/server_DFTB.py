@@ -152,7 +152,8 @@ class Handler(socketserver.BaseRequestHandler):
                 srv.stepdata[idx] = step
 
                 if srv.loglevel >= 2:
-                    print(srv.stepdata, "pings from:", idx, "| Server step:", srv.step)
+                    pass
+                    # print(srv.stepdata, "pings from:", idx, "| Server step:", srv.step)
 
                 if srv.stepdata[idx] > srv.step and srv.update[idx]:
                     srv.qs[idx] = data["q"]
