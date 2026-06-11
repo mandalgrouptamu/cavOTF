@@ -118,6 +118,27 @@ def logfile(msg):
             f.write(f"{msg}\n")
 
 
+def recv_json(sock, chunk=65536):
+    buf = bytearray()
+
+    while True:
+        part = sock.recv(chunk)
+        if not part:
+            raise ConnectionError("client closed before full message")
+
+        buf += part
+
+        if b"\n" in buf:
+            line, _ = buf.split(b"\n", 1)
+            return json.loads(line.decode("utf-8"))
+            
+
+class MyServer(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    request_queue_size = 2048
+    daemon_threads = True
+    
+
 def resultsfile(msg):
     if OUTPUT_CONFIG and OUTPUT_CONFIG.write_results:
         with open("results.txt", "a") as f:
@@ -136,8 +157,9 @@ def recv_all(sock, chunk=65536):
 class Handler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
-            raw = recv_all(self.request)          
-            data = json.loads(raw.decode("utf-8"))
+            # raw = recv_all(self.request)          
+            # data = json.loads(raw.decode("utf-8"))
+            data = recv_json(self.request)
         except Exception as e:
             try:
                 self.request.sendall(json.dumps({"ok": False, "error": repr(e)}).encode("utf-8"))
@@ -218,7 +240,7 @@ if __name__ == "__main__":
                 "ωlm": cfg.physics.omega_lm,
                 "gl_valm": cfg.physics.gl_valm,
                 "gl_n_activem": cfg.physics.gl_n_activem,
-                "toff_lm": config.physics.toff_lm,
+                "toff_lm": cfg.physics.toff_lm,
             }
             for key, value in overrides.items():
                 if hasattr(param_obj, key):
@@ -239,7 +261,8 @@ if __name__ == "__main__":
 
     print(f" Server starting on localhost:{port}")
 
-    srv = socketserver.ThreadingTCPServer(("", port), Handler)
+    # srv = socketserver.ThreadingTCPServer(("", port), Handler)
+    srv = MyServer(("", port), Handler)
     srv.N = int(args.N)
     srv.ids = range(srv.N)
     srv.output_config = OUTPUT_CONFIG
