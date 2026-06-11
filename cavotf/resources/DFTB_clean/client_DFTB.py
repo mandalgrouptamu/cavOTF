@@ -47,19 +47,38 @@ except Exception:  # noqa: BLE001
 #         reply = cli.recv(4096)
 #     return reply.decode().strip()
     
+# def comm(msg, host, port, chunk=65536):
+#     msg["execTime"] = time.time()
+#     payload = json.dumps(msg)
+#
+#     with socket.socket() as cli:
+#         cli.connect((host, port))
+#         cli.sendall(payload.encode("utf-8"))
+#         cli.shutdown(socket.SHUT_WR)  # tell server we're done sending (often helps)
+#
+#         parts = []
+#         while True:
+#             data = cli.recv(chunk)
+#             if not data:          # EOF: server closed its sending side
+#                 break
+#             parts.append(data)
+#
+#     return b"".join(parts).decode("utf-8").strip()
+    
 def comm(msg, host, port, chunk=65536):
     msg["execTime"] = time.time()
     payload = json.dumps(msg)
 
     with socket.socket() as cli:
         cli.connect((host, port))
-        cli.sendall(payload.encode("utf-8"))
-        cli.shutdown(socket.SHUT_WR)  # tell server we're done sending (often helps)
+
+        # Send one complete JSON message, terminated by newline
+        cli.sendall((payload + "\n").encode("utf-8"))
 
         parts = []
         while True:
             data = cli.recv(chunk)
-            if not data:          # EOF: server closed its sending side
+            if not data:
                 break
             parts.append(data)
 
