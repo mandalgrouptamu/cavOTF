@@ -1,11 +1,11 @@
 <h1 align="center">cavOTF</h1>
-**Sachith Wickramasinghe, Amir H. Amini**
+
 
 <p align="center">
   <strong>On-the-fly cavity–molecular dynamics for vibrational polaritons</strong>
 </p>
 
-
+**Sachith Wickramasinghe, Amir H. Amini**
 
 <p align="center">
   <img src="/logo.png" alt="CavityOTF" width="300"/>
