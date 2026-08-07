@@ -5,6 +5,24 @@
   <strong>On-the-fly cavity–molecular dynamics for vibrational polaritons</strong>
 </p>
 
+
+<p align="center">
+  <a href="https://pypi.org/project/cavotf/">
+    <img src="https://img.shields.io/pypi/v/cavotf?color=blue" alt="PyPI">
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-%E2%89%A53.9-blue" alt="Python">
+  </a>
+  <a href="https://github.com/mandalgrouptamu/cavOTF/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/mandalgrouptamu/cavOTF" alt="License">
+  </a>
+  <a href="https://doi.org/10.1039/D5CP04879F">
+    <img src="https://img.shields.io/badge/DOI-10.1039%2FD5CP04879F-red" alt="DOI">
+  </a>
+</p>
+
+
+
 **Sachith Wickramasinghe, Amir H. Amini**
 
 <p align="center">
