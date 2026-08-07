@@ -1,4 +1,4 @@
-# cavOTF
+<h1 align="center">cavOTF</h1>
 **Sachith Wickramasinghe, Amir H. Amini**
 
 
