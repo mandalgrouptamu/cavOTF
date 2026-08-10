@@ -2,7 +2,8 @@
 
 
 <p align="center">
-  <strong>On-the-fly cavity–molecular dynamics for vibrational polaritons</strong>
+  <strong>On-the-fly cavity–molecular dynamics for vibrational polaritons</strong></br>
+  <strong>Sachith Wickramasinghe, Amirhosein Amini, Arkajit Mandal, PCCP (2026)</strong>
 </p>
 
 
@@ -23,7 +24,7 @@
 
 
 
-**Sachith Wickramasinghe, Amir H. Amini**
+
 
 <p align="center">
   <img src="/logo.png" alt="CavityOTF" width="300"/>
